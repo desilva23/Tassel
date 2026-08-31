@@ -301,7 +301,6 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
   Gatekeeper. The build ad-hoc signs, which is enough to run on this machine but
   not to hand to anybody else.
 - Bundle identifier is still `com.example.tassel` in `Resources/Info.plist`.
-- The `LICENSE` file says `YOUR NAME HERE`. Put your name in it before you push.
 
 ## Provenance
 
