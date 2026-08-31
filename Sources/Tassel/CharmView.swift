@@ -22,6 +22,14 @@ final class CharmView: NSView {
     var charm: Charm = .fallback { didSet { invalidateRope() } }
     var charmSize: Double = 44 { didSet { invalidateRope() } }
     var showsOrnaments = true { didSet { invalidateRope() } }
+    /// How solid the charm looks. Falls as its ritual goes untended, so a
+    /// neglected charm looks neglected rather than announcing itself.
+    var charmOpacity: Double = 1 {
+        didSet {
+            guard abs(charmOpacity - oldValue) > 0.001 else { return }
+            invalidateRope()
+        }
+    }
 
     /// A faint, slow drift so the charm sways while you work instead of hanging
     /// dead still. Set to 0 for a charm that only moves when something moves it.
@@ -436,10 +444,18 @@ final class CharmView: NSView {
         Self.cordColor.setStroke()
         path.stroke()
 
+        // The rope keeps its colour; only what hangs on it fades, so the fading
+        // reads as the charm going untended rather than the whole thing dimming.
+        let context = NSGraphicsContext.current
+        context?.saveGraphicsState()
+        context?.cgContext.setAlpha(charmOpacity.clamped(to: 0.05...1))
+
         if showsOrnaments {
             drawOrnaments()
         }
         drawCharm(at: rope.endPoint, angle: rope.endAngle)
+
+        context?.restoreGraphicsState()
     }
 
     /// Beads and a smaller charm, threaded on the rope above the main one.

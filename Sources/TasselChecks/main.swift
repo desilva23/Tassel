@@ -616,4 +616,105 @@ Expect.suite("nimbu mirchi hangs its chillies crosswise") {
     Expect.that(Charm.builtIn.contains { $0.name == "Nimbu Mirchi" }, "the charm should be on the menu")
 }
 
+// A charm fades as its ritual goes untended, and is restored by tending it.
+Expect.suite("a ritual fades and is restored") {
+    let ritual = Ritual(name: "Hang a Fresh One", days: 7)
+    let now = Date()
+
+    // Never tended is not the same as neglected: hanging one up counts.
+    Expect.near(ritual.freshness(lastPerformed: nil, now: now), 1, 1e-9, "an untouched charm should start fresh")
+    Expect.near(ritual.opacity(lastPerformed: nil, now: now), 1, 1e-9, "an untouched charm should be fully solid")
+
+    let justNow = now.addingTimeInterval(-1)
+    Expect.near(ritual.freshness(lastPerformed: justNow, now: now), 1, 0.01, "a charm just tended should be fresh")
+
+    let halfway = now.addingTimeInterval(-3.5 * 86_400)
+    Expect.near(ritual.freshness(lastPerformed: halfway, now: now), 0.5, 0.01, "halfway through should be half faded")
+
+    let overdue = now.addingTimeInterval(-30 * 86_400)
+    Expect.near(ritual.freshness(lastPerformed: overdue, now: now), 0, 1e-9, "long overdue should be fully faded")
+}
+
+// However long it is left, a charm never fades to nothing.
+Expect.suite("a neglected charm never disappears") {
+    let now = Date()
+    let forgotten = now.addingTimeInterval(-3650 * 86_400)
+    for charm in Charm.builtIn {
+        let opacity = charm.ritual.opacity(lastPerformed: forgotten, now: now)
+        Expect.that(opacity > 0.08, "\(charm.name) faded to \(opacity) — it should look neglected, not vanish")
+        Expect.that(opacity < 1, "\(charm.name) does not fade at all when neglected")
+    }
+}
+
+// A clock that has jumped backwards must not make a charm more than fresh.
+Expect.suite("a ritual in the future is still just fresh") {
+    let ritual = Ritual(name: "Ring It", days: 3)
+    let now = Date()
+    let future = now.addingTimeInterval(90 * 86_400)
+    Expect.near(ritual.freshness(lastPerformed: future, now: now), 1, 1e-9, "a future date should clamp to fresh")
+    Expect.near(ritual.opacity(lastPerformed: future, now: now), 1, 1e-9, "a future date should clamp to solid")
+}
+
+// The menu says so once a charm is more than half gone.
+Expect.suite("a ritual comes due halfway") {
+    let ritual = Ritual(name: "Wipe It Clear", days: 10)
+    let now = Date()
+    Expect.that(!ritual.isDue(lastPerformed: now.addingTimeInterval(-4 * 86_400), now: now), "not due at 40 per cent")
+    Expect.that(ritual.isDue(lastPerformed: now.addingTimeInterval(-6 * 86_400), now: now), "due at 60 per cent")
+    Expect.that(!ritual.isDue(lastPerformed: nil, now: now), "an untouched charm is not overdue")
+}
+
+// Every charm carries an upkeep of its own rather than a shared placeholder.
+Expect.suite("every charm has its own ritual") {
+    let names = Set(Charm.builtIn.map(\.ritual.name))
+    Expect.that(names.count == Charm.builtIn.count, "two charms share a ritual name")
+    for charm in Charm.builtIn {
+        Expect.that(charm.ritual.period > 0, "\(charm.name) has no ritual period")
+        Expect.that(charm.ritual.name != Ritual.generic.name, "\(charm.name) was left on the generic ritual")
+    }
+}
+
+// tassel:// URLs, which is how anything else on the machine asks for something.
+Expect.suite("tassel:// urls parse") {
+    func command(_ text: String) -> Command? {
+        URL(string: text).flatMap(Command.init(url:))
+    }
+
+    Expect.that(command("tassel://bless") == .bless, "bless should parse")
+    Expect.that(command("tassel://ritual") == .ritual, "ritual should parse")
+    Expect.that(command("tassel://show") == .show, "show should parse")
+    Expect.that(command("tassel://hide") == .hide, "hide should parse")
+
+    // Both spellings, because both are things people will type.
+    Expect.that(command("tassel:bless") == .bless, "the slashless form should parse")
+    Expect.that(command("TASSEL://BLESS") == .bless, "parsing should not care about case")
+    Expect.that(command("tassel://bless/") == .bless, "a trailing slash should be tolerated")
+
+    Expect.that(command("tassel://charm?name=Nazar") == .charm("Nazar"), "charm should carry its name")
+}
+
+// Anything unrecognised is ignored rather than guessed at. These arrive from
+// outside the app, so the parser is the boundary.
+Expect.suite("tassel:// urls reject the rest") {
+    func command(_ text: String) -> Command? {
+        URL(string: text).flatMap(Command.init(url:))
+    }
+
+    Expect.that(command("https://example.com/bless") == nil, "another scheme should be refused")
+    Expect.that(command("tassel://quit") == nil, "an unknown verb should be refused")
+    Expect.that(command("tassel://") == nil, "an empty verb should be refused")
+    Expect.that(command("tassel://charm") == nil, "charm without a name should be refused")
+    Expect.that(command("tassel://charm?name=") == nil, "charm with an empty name should be refused")
+    Expect.that(command("tassel://charm?name=%20") == nil, "charm with a blank name should be refused")
+}
+
+// A URL can only ever select a charm that already exists, so nothing outside
+// the app can put arbitrary content on screen.
+Expect.suite("a url cannot invent a charm") {
+    Expect.that(Charm.named("Nazar") != nil, "a real charm should resolve")
+    Expect.that(Charm.named("  nazar  ") != nil, "resolving should tolerate case and spacing")
+    Expect.that(Charm.named("\u{1F480}") == nil, "a raw glyph should not resolve to a charm")
+    Expect.that(Charm.named("Definitely Not A Charm") == nil, "an unknown name should not resolve")
+}
+
 Expect.report()

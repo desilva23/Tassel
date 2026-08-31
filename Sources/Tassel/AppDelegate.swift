@@ -29,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // stored placement mid-drag would yank it straight back.
             guard let self, !self.charmView.isInteracting else { return }
             self.repositionOverlay()
+            self.refreshRitualState()
         }
 
         NotificationCenter.default.addObserver(
@@ -38,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil
         )
 
+        refreshRitualState()
         setVisible(preferences.isVisible)
     }
 
@@ -81,6 +83,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(charmMenuItem())
         menu.addItem(sizeMenuItem())
         menu.addItem(positionMenuItem())
+
+        let ritual = preferences.charm.ritual
+        let due = ritual.isDue(lastPerformed: preferences.lastRitual(forCharm: preferences.charm.glyph))
+        let ritualItem = NSMenuItem(
+            title: due ? "\(ritual.name)  \u{00B7}  due" : ritual.name,
+            action: #selector(performRitual),
+            keyEquivalent: ""
+        )
+        ritualItem.target = self
+        ritualItem.toolTip = "The one thing this charm asks of you. It fades if left alone."
+        menu.addItem(ritualItem)
+
+        menu.addItem(.separator())
 
         let beads = NSMenuItem(
             title: "Beads on the Rope",
@@ -324,6 +339,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         dropIn()
     }
 
+    /// Tend the charm: the fade resets, and it drops in to acknowledge it.
+    @objc private func performRitual() {
+        preferences.recordRitual(forCharm: preferences.charm.glyph)
+        refreshRitualState()
+        refreshMenu()
+        dropIn()
+    }
+
+    /// Recompute how faded the charm should look. Cheap, so the anchor poll
+    /// carries it rather than running a second timer.
+    private func refreshRitualState() {
+        let charm = preferences.charm
+        charmView.charmOpacity = charm.ritual.opacity(
+            lastPerformed: preferences.lastRitual(forCharm: charm.glyph)
+        )
+    }
+
+    // MARK: - tassel:// URLs
+
+    /// Anything that can run a shell command can ask for these — a git hook, a
+    /// Shortcut, a CI script. Commands arrive from outside the app, so the
+    /// parser accepts only the verbs it knows and `charm` only ever resolves to
+    /// a built-in name: a URL can never inject arbitrary content into the app.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            guard let command = Command(url: url) else { continue }
+            perform(command)
+        }
+    }
+
+    private func perform(_ command: Command) {
+        switch command {
+        case .bless:
+            if !preferences.isVisible {
+                setVisible(true)
+            }
+            overlay.orderFrontRegardless()
+            charmView.nudge()
+
+        case .ritual:
+            performRitual()
+
+        case .show:
+            setVisible(true)
+
+        case .hide:
+            setVisible(false)
+
+        case let .charm(name):
+            guard let charm = Charm.named(name) else { return }
+            apply(glyph: charm.glyph)
+        }
+    }
+
     @objc private func toggleLoginItem() {
         if let error = LoginItem.setEnabled(!LoginItem.isEnabled) {
             let alert = NSAlert(error: error)
@@ -451,6 +520,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         preferences.charm = charm
         charmView.charm = charm
         statusItem.button?.title = charm.glyph
+        refreshRitualState()
         refreshMenu()
         dropIn()
     }

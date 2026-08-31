@@ -17,6 +17,7 @@ public final class Preferences {
         static let charmSize = "charmSize"
         static let catchesPointer = "catchesPointer"
         static let showsOrnaments = "showsOrnaments"
+        static let ritualDates = "ritualDates"
         static let placementKind = "placementKind"
         static let placementX = "placementX"
     }
@@ -32,6 +33,22 @@ public final class Preferences {
     public var showsOrnaments: Bool {
         get { defaults.object(forKey: Key.showsOrnaments) as? Bool ?? true }
         set { defaults.set(newValue, forKey: Key.showsOrnaments) }
+    }
+
+    /// When each charm last had its ritual performed.
+    ///
+    /// Kept per charm rather than one date for the app, so tending one charm
+    /// does not quietly refresh every other one you might switch to.
+    public func lastRitual(forCharm glyph: String) -> Date? {
+        let stored = defaults.dictionary(forKey: Key.ritualDates) as? [String: Double]
+        guard let seconds = stored?[glyph] else { return nil }
+        return Date(timeIntervalSince1970: seconds)
+    }
+
+    public func recordRitual(forCharm glyph: String, at date: Date = Date()) {
+        var stored = defaults.dictionary(forKey: Key.ritualDates) as? [String: Double] ?? [:]
+        stored[glyph] = date.timeIntervalSince1970
+        defaults.set(stored, forKey: Key.ritualDates)
     }
 
     /// Where the charm hangs. Stored as a kind plus two fractions rather than a

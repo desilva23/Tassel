@@ -59,7 +59,8 @@ make clean   # remove .build
 | Send it to a set spot | **Position** submenu, or **Place…** |
 | Bead it, or not | **Beads on the Rope** |
 | Resize it | **Size** submenu |
-| Change the charm | **Charm** submenu — eight built-ins, or **Custom Emoji…** |
+| Change the charm | **Charm** submenu — eleven built-ins, or **Custom Emoji…** |
+| Tend it | The ritual at the top of the menu |
 | Hide it | **Hide Charm** |
 
 ### Reaching for it
@@ -94,6 +95,40 @@ Command-drag on the window of an *inactive* app for its own "move a background
 window" gesture, and this app is never active, so a Command-drag may never reach
 the charm at all. Two parts of the same object that behave differently is a
 better answer than a modifier, and needs no explaining.
+
+### Rituals
+
+The real objects are not ornaments you hang and forget. A daruma waits with a
+blank eye until the wish it was bought for comes true. A nimbu mirchi dries out
+and is replaced, traditionally on a Saturday. A guardian weathers and is
+repainted. So every charm here carries the upkeep its own object asks for —
+**Ring It**, **Wipe It Clear**, **Turn Back the Eye**, **Hang a Fresh One** —
+and the top item in the menu is whatever that charm needs.
+
+Left alone, a charm fades. It never fades to nothing: a charm nobody has touched
+in a year should look neglected, not disappear. Performing the ritual restores
+it, and the menu says *due* once it is more than half gone. The dates are kept
+per charm, so tending one does not quietly refresh every other one you might
+switch to. A charm that has never been tended starts fresh rather than derelict —
+hanging one up is itself the first observance.
+
+### tassel:// URLs
+
+The app answers a `tassel://` URL, so anything that can run a shell command can
+ask it for something — a git hook, a Shortcut, a CI script, a cron job. No
+integration, no API, no daemon.
+
+```bash
+open "tassel://bless"              # before a deploy, a demo, a big meeting
+open "tassel://ritual"             # tend the charm
+open "tassel://charm?name=Dragon"  # switch charms
+open "tassel://show"               # and hide
+```
+
+Commands arrive from outside the app, so the parser is a boundary and behaves
+like one: it accepts only the verbs it knows, and `charm` resolves only against
+the built-in names. A URL can never put arbitrary content on screen. Anything
+unrecognised is ignored rather than guessed at.
 
 ### What is on the rope
 
@@ -151,7 +186,9 @@ asking to observe every keystroke you type.
 Sources/
   TasselCore/          no AppKit — runnable and checkable without a screen
     Rope.swift         a flexible rope: Verlet chain with distance constraints
-    Charm.swift        the glyphs that hang on the cord
+    Charm.swift        the glyphs that hang on the cord, and their rituals
+    Ritual.swift       upkeep: how a charm fades, and what restores it
+    Command.swift      the tassel:// URL boundary
     Placement.swift    where the charm hangs, and the solver that resolves it
     Preferences.swift  UserDefaults, with every value clamped on read
   Tassel/              the AppKit layer
@@ -270,7 +307,11 @@ leaves a loop of rope dangling below it, that a rope pulled taut really is taut
 rather than bowing, that everything threaded on the rope stays on it however the
 rope is bent or stretched, that no charm's threading hides behind it or collides
 with itself at any of the four charm sizes, that a chilli lies across the string
-rather than standing upright, that lowering the recovery rate really
+rather than standing upright, that a neglected charm fades but never vanishes,
+that a clock jumping backwards cannot make a charm more than fresh, that every
+charm carries an upkeep of its own rather than a shared placeholder, that every
+`tassel://` verb parses and everything else is refused, and that a URL cannot
+invent a charm that does not exist, that lowering the recovery rate really
 does slow the return, that recovery speed does not affect how the rope hangs, that dragging the charm somewhere and
 resolving it again puts it back in the same spot, and that preferences clamp junk
 that lands in `UserDefaults`.
@@ -288,6 +329,11 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
   honoured from `UserDefaults` but nothing writes them yet.
 - The hotkey is hard-coded in `AppDelegate.setUpHotKey()`.
 - Placement is single-display: the charm always hangs on the menu bar screen.
+- Charms are limited to what the system emoji font has a glyph for. A maneki
+  neko, a daruma, a vegvisir and a pysanka all want to be here and none of them
+  exist as emoji, so they need real artwork and a way to load it.
+- Rituals only fade. Several of these objects want a ritual with *stages* — a
+  daruma has one eye, then two — which the current model has no room for.
 - The grab area is a circle around the charm, not its actual glyph shape, so a
   click just outside a thin charm still passes through to whatever is behind it.
 - The rope always hangs from the very top of the screen, so it crosses the menu
