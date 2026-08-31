@@ -691,6 +691,19 @@ Expect.suite("tassel:// urls parse") {
     Expect.that(command("tassel://bless/") == .bless, "a trailing slash should be tolerated")
 
     Expect.that(command("tassel://charm?name=Nazar") == .charm("Nazar"), "charm should carry its name")
+    Expect.that(command("tassel:charm?name=Nazar") == .charm("Nazar"), "the slashless form should carry its name too")
+    Expect.that(command("tassel://charm?name=Nimbu%20Mirchi") == .charm("Nimbu Mirchi"), "an escaped space should decode")
+    Expect.that(command("tassel://charm?other=x&name=Star") == .charm("Star"), "name should be found among other parameters")
+
+    // Both spellings must agree, on every verb. They did not: Foundation puts
+    // the verb in a different place for each form depending on its version, and
+    // only CI noticed.
+    for verb in ["bless", "ritual", "show", "hide"] {
+        Expect.that(
+            command("tassel://\(verb)") == command("tassel:\(verb)"),
+            "tassel://\(verb) and tassel:\(verb) should mean the same thing"
+        )
+    }
 }
 
 // Anything unrecognised is ignored rather than guessed at. These arrive from

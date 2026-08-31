@@ -19,12 +19,20 @@ public enum Command: Equatable, Sendable {
 
     /// Parse a `tassel://` URL. Returns nil for anything else, so a malformed
     /// or hostile URL is ignored rather than guessed at.
+    ///
+    /// Read out of the raw string rather than `URL.host` and `URL.path`.
+    /// Foundation disagrees with itself across versions about where the verb in
+    /// the slashless `tassel:bless` form lives — it is the host on one and the
+    /// path on another — so `tassel:bless` parsed here and failed on CI. Taking
+    /// the text apart directly behaves the same everywhere.
     public init?(url: URL) {
-        guard url.scheme?.lowercased() == Self.scheme else { return nil }
+        guard let scheme = url.scheme?.lowercased(), scheme == Self.scheme else { return nil }
 
-        // `tassel://bless` puts the verb in the host; `tassel:bless` puts it in
-        // the path. Both are things people will type, so accept both.
-        let verb = (url.host ?? url.path)
+        // Everything after `tassel:`, which is the same text in both forms once
+        // any leading slashes come off.
+        let body = url.absoluteString.dropFirst(scheme.count + 1)
+        let verb = body
+            .prefix { $0 != "?" && $0 != "#" }
             .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             .lowercased()
 
@@ -34,12 +42,23 @@ public enum Command: Equatable, Sendable {
         case "show": self = .show
         case "hide": self = .hide
         case "charm":
-            let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-            let name = components?.queryItems?.first { $0.name.lowercased() == "name" }?.value
-            guard let name, !name.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+            let query = body.drop { $0 != "?" }.dropFirst()
+            guard let name = Self.value(named: "name", in: query),
+                  !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            else { return nil }
             self = .charm(name)
         default:
             return nil
         }
+    }
+
+    private static func value(named key: String, in query: Substring) -> String? {
+        for pair in query.split(separator: "&") {
+            let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            guard parts.count == 2, parts[0].lowercased() == key else { continue }
+            let raw = parts[1].replacingOccurrences(of: "+", with: " ")
+            return raw.removingPercentEncoding ?? raw
+        }
+        return nil
     }
 }
