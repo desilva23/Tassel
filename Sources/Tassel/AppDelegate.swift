@@ -79,6 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
         menu.addItem(charmMenuItem())
+        menu.addItem(sizeMenuItem())
         menu.addItem(positionMenuItem())
 
         let grab = NSMenuItem(
@@ -88,7 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         grab.target = self
         grab.state = preferences.catchesPointer ? .on : .off
-        grab.toolTip = "Let the charm be picked up and thrown. Turn off to make it purely decorative."
+        grab.toolTip = "Let the charm be pulled about and thrown. Turn off to make it purely decorative."
         menu.addItem(grab)
 
         menu.addItem(.separator())
@@ -132,6 +133,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return item
     }
 
+    private func sizeMenuItem() -> NSMenuItem {
+        let submenu = NSMenu()
+        for (index, size) in Charm.sizes.enumerated() {
+            let item = NSMenuItem(title: size.name, action: #selector(selectSize(_:)), keyEquivalent: "")
+            item.target = self
+            item.tag = index
+            item.state = abs(size.points - preferences.charmSize) < 0.5 ? .on : .off
+            submenu.addItem(item)
+        }
+
+        let item = NSMenuItem(title: "Size", action: nil, keyEquivalent: "")
+        item.submenu = submenu
+        return item
+    }
+
     private func positionMenuItem() -> NSMenuItem {
         let submenu = NSMenu()
         let current = preferences.placement
@@ -150,7 +166,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         submenu.addItem(.separator())
 
-        let move = NSMenuItem(title: "Move\u{2026}", action: #selector(beginPositioning), keyEquivalent: "")
+        let move = NSMenuItem(title: "Place\u{2026}", action: #selector(beginPositioning), keyEquivalent: "")
         move.target = self
         submenu.addItem(move)
 
@@ -188,12 +204,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         overlay.contentView = charmView
-        repositionOverlay()
+        repositionOverlay(teleport: true)
     }
 
     /// Resolve the stored placement into a pivot, and park the window over the
     /// screen so view coordinates and screen coordinates line up.
-    private func repositionOverlay() {
+    /// - Parameter teleport: true when the charm is being sent somewhere
+    ///   outright — a placement change, a display change — so the rope re-hangs
+    ///   at the new spot instead of lashing across the screen to reach it.
+    private func repositionOverlay(teleport: Bool = false) {
         guard let overlay, let screen = anchorScreen else { return }
 
         if overlay.frame != screen.frame {
@@ -211,20 +230,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         charmView.cordLength = anchor.cordLength
-        charmView.pivot = CGPoint(
+        let point = CGPoint(
             x: anchor.pivot.x - screen.frame.minX,
             y: anchor.pivot.y - screen.frame.minY
         )
+        if teleport {
+            charmView.jump(to: point)
+        } else {
+            charmView.pivot = point
+        }
     }
 
     @objc private func screensChanged() {
-        repositionOverlay()
+        repositionOverlay(teleport: true)
     }
 
     private func setVisible(_ visible: Bool) {
         preferences.isVisible = visible
         if visible {
-            repositionOverlay()
+            repositionOverlay(teleport: true)
             overlay.orderFrontRegardless()
             charmView.startAnimating()
         } else {
@@ -256,7 +280,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func dropIn() {
         if !preferences.isVisible {
             setVisible(true)
-            charmView.settle()
         }
         charmView.nudge()
     }
@@ -264,6 +287,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func selectCharm(_ sender: NSMenuItem) {
         guard let glyph = sender.representedObject as? String else { return }
         apply(glyph: glyph)
+    }
+
+    @objc private func selectSize(_ sender: NSMenuItem) {
+        guard Charm.sizes.indices.contains(sender.tag) else { return }
+        preferences.charmSize = Charm.sizes[sender.tag].points
+        charmView.charmSize = preferences.charmSize
+        refreshMenu()
+        dropIn()
     }
 
     @objc private func toggleCatchesPointer() {
@@ -301,8 +332,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func selectPlacement(_ sender: NSMenuItem) {
         guard Placement.presets.indices.contains(sender.tag) else { return }
         preferences.placement = Placement.presets[sender.tag].placement
-        charmView.settle()
-        repositionOverlay()
+        repositionOverlay(teleport: true)
         refreshMenu()
         dropIn()
     }
@@ -345,8 +375,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         preferences.placement = PlacementSolver.placement(forCharmAt: onScreen, screen: screen.frame)
 
         endPositioning()
-        charmView.settle()
-        repositionOverlay()
+        repositionOverlay(teleport: true)
         refreshMenu()
         charmView.nudge()
     }

@@ -18,7 +18,6 @@ public final class Preferences {
         static let catchesPointer = "catchesPointer"
         static let placementKind = "placementKind"
         static let placementX = "placementX"
-        static let placementDrop = "placementDrop"
     }
 
     /// Whether the charm can be grabbed with the pointer. With this off it is
@@ -35,19 +34,15 @@ public final class Preferences {
             guard defaults.string(forKey: Key.placementKind) == "fixed" else {
                 return .followStatusItem
             }
-            return .fixed(
-                x: (defaults.object(forKey: Key.placementX) as? Double ?? 0.5).clamped(to: 0...1),
-                drop: (defaults.object(forKey: Key.placementDrop) as? Double ?? 0.2).clamped(to: 0...1)
-            )
+            return .fixed(x: (defaults.object(forKey: Key.placementX) as? Double ?? 0.5).clamped(to: 0...1))
         }
         set {
             switch newValue {
             case .followStatusItem:
                 defaults.set("statusItem", forKey: Key.placementKind)
-            case let .fixed(x, drop):
+            case let .fixed(x):
                 defaults.set("fixed", forKey: Key.placementKind)
                 defaults.set(x.clamped(to: 0...1), forKey: Key.placementX)
-                defaults.set(drop.clamped(to: 0...1), forKey: Key.placementDrop)
             }
         }
     }
@@ -67,12 +62,12 @@ public final class Preferences {
     }
 
     public var cordLength: Double {
-        get { (defaults.object(forKey: Key.cordLength) as? Double ?? 92).clamped(to: 32...400) }
+        get { (defaults.object(forKey: Key.cordLength) as? Double ?? 150).clamped(to: 32...400) }
         set { defaults.set(newValue.clamped(to: 32...400), forKey: Key.cordLength) }
     }
 
     public var charmSize: Double {
-        get { (defaults.object(forKey: Key.charmSize) as? Double ?? 28).clamped(to: 12...96) }
+        get { (defaults.object(forKey: Key.charmSize) as? Double ?? 44).clamped(to: 12...96) }
         set { defaults.set(newValue.clamped(to: 12...96), forKey: Key.charmSize) }
     }
 }

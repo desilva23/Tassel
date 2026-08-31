@@ -27,4 +27,13 @@ public struct Charm: Equatable, Identifiable, Sendable {
     ]
 
     public static let fallback = builtIn[0]
+
+    /// Offered sizes, in points. A charm is decoration: how big it should be is
+    /// a matter of taste, not something to be guessed on the user's behalf.
+    public static let sizes: [(name: String, points: Double)] = [
+        ("Small", 28),
+        ("Medium", 44),
+        ("Large", 62),
+        ("Extra Large", 84),
+    ]
 }

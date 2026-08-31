@@ -3,22 +3,23 @@ import Foundation
 
 /// Where the charm lives.
 ///
-/// The cord always falls from the top of the screen, so a placement only has to
-/// say how far across and how far down the charm itself should rest.
+/// The rope always falls from the top of the screen and always pays out the same
+/// length, so a placement only has to say how far *across* the charm sits. How
+/// far down it hangs is the rope's business, not the placement's: the drop is
+/// what the rope stretches and springs back along, so letting it be repositioned
+/// too would leave a stretch and a move impossible to tell apart.
 public enum Placement: Equatable, Sendable {
     /// Hang from the menu bar item and follow it as it slides around.
     case followStatusItem
-    /// Fractions of the anchor screen: `x` across from the left, `drop` down
-    /// from the top edge. Stored as fractions so a resolution or display change
-    /// keeps the charm roughly where you put it.
-    case fixed(x: Double, drop: Double)
+    /// A fraction of the way across the anchor screen. Stored as a fraction so
+    /// a resolution or display change keeps the charm roughly where you put it.
+    case fixed(x: Double)
 
     public static let presets: [(name: String, placement: Placement)] = [
         ("Menu Bar", .followStatusItem),
-        ("Top Left", .fixed(x: 0.05, drop: 0.16)),
-        ("Top Right", .fixed(x: 0.95, drop: 0.16)),
-        ("Bottom Left", .fixed(x: 0.05, drop: 0.86)),
-        ("Bottom Right", .fixed(x: 0.95, drop: 0.86)),
+        ("Left", .fixed(x: 0.06)),
+        ("Centre", .fixed(x: 0.5)),
+        ("Right", .fixed(x: 0.94)),
     ]
 }
 
@@ -65,21 +66,20 @@ public enum PlacementSolver {
                 cordLength: defaultCordLength.clamped(to: minimumCord...maximumCord)
             )
 
-        case let .fixed(x, drop):
+        case let .fixed(x):
             let across = x.clamped(to: 0...1)
-            let down = drop.clamped(to: 0...1)
             return Anchor(
                 pivot: CGPoint(x: screen.minX + across * screen.width, y: screen.maxY),
-                cordLength: (down * screen.height).clamped(to: minimumCord...maximumCord)
+                cordLength: defaultCordLength.clamped(to: minimumCord...maximumCord)
             )
         }
     }
 
-    /// The placement that would rest the charm at `point`, for drag-to-position.
+    /// The placement that would put the charm at `point`. Only the horizontal
+    /// part is taken: pointing lower down does not hang the charm lower, it just
+    /// picks the column it hangs in.
     public static func placement(forCharmAt point: CGPoint, screen: CGRect) -> Placement {
-        guard screen.width > 0, screen.height > 0 else { return .followStatusItem }
-        let across = (point.x - screen.minX) / screen.width
-        let down = (screen.maxY - point.y) / screen.height
-        return .fixed(x: across.clamped(to: 0...1), drop: down.clamped(to: 0...1))
+        guard screen.width > 0 else { return .followStatusItem }
+        return .fixed(x: ((point.x - screen.minX) / screen.width).clamped(to: 0...1))
     }
 }

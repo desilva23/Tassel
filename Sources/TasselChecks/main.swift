@@ -2,100 +2,291 @@ import CoreGraphics
 import Foundation
 import TasselCore
 
-// Hanging straight down with no push, it should stay hanging straight down.
-Expect.suite("rest is stable") {
-    var pendulum = Pendulum()
+/// Distance from `point` to the straight line through `a` and `b`. This is the
+/// measure of "is it bending": a rigid pendulum keeps every point on that line.
+func deviation(of point: CGPoint, fromLineThrough a: CGPoint, and b: CGPoint) -> Double {
+    let dx = b.x - a.x
+    let dy = b.y - a.y
+    let span = hypot(dx, dy)
+    guard span > 1e-9 else { return hypot(point.x - a.x, point.y - a.y) }
+    return abs(dy * (point.x - a.x) - dx * (point.y - a.y)) / span
+}
+
+/// The largest sideways departure of any node from the straight line between
+/// the rope's two ends.
+func maximumBend(of rope: Rope) -> Double {
+    rope.nodes.map { deviation(of: $0.position, fromLineThrough: rope.anchor, and: rope.endPoint) }.max() ?? 0
+}
+
+/// How far the rope has stretched beyond its rest length, as a fraction.
+func stretch(of rope: Rope) -> Double {
+    var measured = 0.0
+    for index in 0..<(rope.nodes.count - 1) {
+        let a = rope.nodes[index].position
+        let b = rope.nodes[index + 1].position
+        measured += hypot(b.x - a.x, b.y - a.y)
+    }
+    return measured / rope.length - 1
+}
+
+func makeRope(length: Double = 300) -> Rope {
+    var rope = Rope(anchor: CGPoint(x: 0, y: 0), length: length)
+    rope.settle()
+    return rope
+}
+
+// A rope left alone hangs straight down and stays there.
+Expect.suite("a settled rope hangs still") {
+    var rope = makeRope()
     for _ in 0..<600 {
-        pendulum.step(dt: 1.0 / 60)
+        rope.step(dt: 1.0 / 60)
     }
-    Expect.near(pendulum.angle, 0, 1e-9, "angle drifted from rest")
-    Expect.near(pendulum.angularVelocity, 0, 1e-9, "velocity appeared from nowhere")
-    Expect.that(pendulum.isAtRest, "should report itself at rest")
+    Expect.near(rope.endPoint.x, 0, 0.5, "the charm drifted sideways on its own")
+    // The rope has a little give, so it hangs a hair longer than its rest
+    // length under the charm's own weight. A fraction of a percent, invisible.
+    Expect.near(rope.endPoint.y, -300, 2.0, "the charm should hang a full rope below the anchor")
+    Expect.that(rope.isAtRest, "a rope left alone should report itself at rest")
+    Expect.near(maximumBend(of: rope), 0, 0.5, "a rope at rest should be straight")
 }
 
-// Released from one side, it swings back toward centre rather than away.
-Expect.suite("released from an angle swings back") {
-    var pendulum = Pendulum(angle: 0.6)
-    let start = pendulum.angle
-    pendulum.step(dt: 1.0 / 60)
-    Expect.that(pendulum.angle < start, "swung outward instead of back")
+// The point of the whole rewrite: pushed in the middle, it has to *bend*, not
+// just swing. A rigid pendulum keeps every point on the line between its ends,
+// so it scores zero here no matter how hard it is pushed.
+Expect.suite("a push in the middle bends the rope") {
+    var rope = makeRope()
+    let middle = rope.nodes[rope.nodes.count / 2].position
+    let push = Rope.Push(
+        point: middle,
+        acceleration: CGVector(dx: 9000, dy: 0),
+        radius: 90
+    )
+    for _ in 0..<12 {
+        rope.step(dt: 1.0 / 120, push: push)
+    }
+    Expect.that(maximumBend(of: rope) > 10, "the rope stayed straight under a sideways push — it is not bending")
 }
 
-// Damping has to actually take energy out, or the charm never settles.
-Expect.suite("damping bleeds off amplitude") {
-    var pendulum = Pendulum(angle: 0.7)
+// A rope shoved at the bottom curves too, rather than pivoting rigidly.
+Expect.suite("the rope curves when its end is thrown") {
+    var rope = makeRope()
+    rope.nudge(CGVector(dx: 26, dy: 0))
     var peak = 0.0
-    for _ in 0..<1200 {
-        pendulum.step(dt: 1.0 / 60)
-        peak = max(peak, abs(pendulum.angle))
+    for _ in 0..<90 {
+        rope.step(dt: 1.0 / 120)
+        peak = max(peak, maximumBend(of: rope))
     }
-    Expect.that(abs(pendulum.angle) < 0.05, "still swinging at \(pendulum.angle) after 20s")
-    Expect.that(peak <= 0.7 + 1e-6, "amplitude grew to \(peak)")
+    Expect.that(peak > 4, "a thrown rope should curve on the way, not stay a rigid line")
 }
 
-// An undamped swing should keep roughly the amplitude it started with, which is
-// the check that the integrator is not quietly pumping energy into the system.
-Expect.suite("undamped swing conserves amplitude") {
-    var pendulum = Pendulum(damping: 0, angle: 0.4)
-    var peak = 0.0
-    for _ in 0..<3000 {
-        pendulum.step(dt: 1.0 / 120)
-        peak = max(peak, abs(pendulum.angle))
+// Under everyday forces — the pointer sweeping through it — the rope should
+// barely give at all.
+Expect.suite("the rope holds its length under ordinary force") {
+    var rope = makeRope()
+    let push = Rope.Push(point: rope.endPoint, acceleration: CGVector(dx: 6500, dy: 0), radius: 80)
+    var worst = 0.0
+    for _ in 0..<240 {
+        rope.step(dt: 1.0 / 120, push: push)
+        worst = max(worst, abs(stretch(of: rope)))
     }
-    Expect.near(peak, 0.4, 0.05, "amplitude was not conserved")
+    Expect.that(worst < 0.03, "a pointer sweep stretched the rope by \(Int(worst * 100))%")
 }
 
-// Yank the anchor to the right and the charm lags to the left.
-Expect.suite("pivot acceleration pushes the bob the other way") {
-    var pendulum = Pendulum()
-    pendulum.step(dt: 1.0 / 60, pivotAcceleration: CGVector(dx: 3000, dy: 0))
-    Expect.that(pendulum.angle < 0, "bob led the pivot instead of lagging it")
+// Pull the charm past where the rope reaches and the rope stretches to follow.
+Expect.suite("dragging past the end stretches the rope") {
+    var rope = makeRope()
+    rope.holdEnd(at: CGPoint(x: 0, y: -360))
+    for _ in 0..<30 {
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.that(stretch(of: rope) > 0.1, "dragging well past the rope's reach barely stretched it")
+    Expect.near(rope.endPoint.y, -360, 1.0, "the charm should have followed the pointer down")
 }
 
-// A dropped frame or a wake from sleep must not fling it into orbit.
+// ...but only so far. Past the limit the pointer pulls away from the charm.
+Expect.suite("the rope cannot be stretched without limit") {
+    var rope = makeRope()
+    rope.holdEnd(at: CGPoint(x: 0, y: -5000))
+    for _ in 0..<60 {
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.that(stretch(of: rope) < 0.35, "the rope tore apart when dragged far enough: \(Int(stretch(of: rope) * 100))% at end y=\(Int(rope.endPoint.y))")
+    Expect.that(rope.endPoint.y > -400, "the charm should have stayed behind the pointer")
+}
+
+// Letting go of a stretched rope snaps it back, and the recoil carries.
+Expect.suite("a stretched rope recoils when released") {
+    var rope = makeRope()
+    rope.holdEnd(at: CGPoint(x: 0, y: -370))
+    for _ in 0..<30 {
+        rope.step(dt: 1.0 / 120)
+    }
+    let stretched = stretch(of: rope)
+    let heldAt = rope.endPoint.y
+
+    rope.releaseEnd()
+    for _ in 0..<20 {
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.that(stretch(of: rope) < stretched, "the rope did not pull back in after release")
+    Expect.that(rope.endPoint.y > heldAt, "the charm should spring back up when let go")
+
+    // It should overshoot and keep moving, not just ooze back into place.
+    Expect.that(abs(rope.nodes[rope.nodes.count - 1].drift.y) > 0.05, "the recoil should carry, not stop dead")
+}
+
+// Stretching must be strictly temporary: once let go, the rope returns to the
+// exact length it started with. A rope that kept the stretch would creep longer
+// every time it was pulled.
+Expect.suite("a stretched rope returns to its original length") {
+    var rope = makeRope()
+    let restingLength = rope.length
+    let restingEnd = rope.endPoint
+
+    for _ in 0..<40 {
+        rope.holdEnd(at: CGPoint(x: 90, y: -380))
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.that(stretch(of: rope) > 0.1, "the rope should have stretched while held")
+
+    rope.releaseEnd()
+    for _ in 0..<900 {
+        rope.step(dt: 1.0 / 120)
+    }
+
+    Expect.near(rope.length, restingLength, 1e-9, "the rope's resting length changed")
+    Expect.near(stretch(of: rope), 0, 0.01, "the rope stayed stretched after release")
+    Expect.that(rope.isAtRest, "the rope was still quivering long after release")
+    Expect.near(rope.endPoint.x, restingEnd.x, 1.0, "the charm did not come back to centre")
+    Expect.near(rope.endPoint.y, restingEnd.y, 1.0, "the charm did not come back to its resting height")
+}
+
+// The charm hangs, so it can be pulled down but never lifted over its anchor.
+Expect.suite("the charm cannot be dragged above its anchor") {
+    var rope = makeRope()
+    rope.holdEnd(at: CGPoint(x: 40, y: 250))
+    rope.step(dt: 1.0 / 120)
+    Expect.that(rope.endPoint.y <= rope.anchor.y + 1e-9, "the charm was lifted above the point it hangs from")
+
+    // Pulling down is fine, and stretches.
+    rope.holdEnd(at: CGPoint(x: 0, y: -360))
+    for _ in 0..<30 {
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.near(rope.endPoint.y, -360, 1.0, "pulling straight down should be allowed")
+}
+
+// Bending must not mean tearing: even an absurd shove stays inside the ceiling.
+Expect.suite("the rope survives an absurd shove") {
+    var rope = makeRope()
+    let push = Rope.Push(
+        point: rope.endPoint,
+        acceleration: CGVector(dx: 40000, dy: -20000),
+        radius: 400
+    )
+    var worst = 0.0
+    for _ in 0..<240 {
+        rope.step(dt: 1.0 / 120, push: push)
+        worst = max(worst, abs(stretch(of: rope)))
+    }
+    Expect.that(worst < 0.35, "the rope tore apart under load: \(Int(worst * 100))%")
+}
+
+// Damping has to actually take energy out, or the rope never settles.
+Expect.suite("damping settles the rope") {
+    var rope = makeRope()
+    rope.nudge(CGVector(dx: 30, dy: 0))
+    for _ in 0..<1800 {
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.near(rope.endPoint.x, 0, 6, "the rope should have come back to hanging straight")
+    Expect.that(maximumBend(of: rope) < 2, "the rope should have straightened out")
+}
+
+// A dropped frame or a wake from sleep must not blow the solver up.
 Expect.suite("a very long frame stays bounded") {
-    var pendulum = Pendulum(angle: 0.5)
-    pendulum.step(dt: 12.0)
-    Expect.that(pendulum.angle.isFinite, "angle went non-finite")
-    Expect.that(abs(pendulum.angle) <= .pi / 2, "angle escaped its clamp")
-    Expect.that(abs(pendulum.angularVelocity) <= 40, "velocity escaped its clamp")
+    var rope = makeRope()
+    rope.nudge(CGVector(dx: 20, dy: 0))
+    rope.step(dt: 12.0)
+    for node in rope.nodes {
+        Expect.that(node.position.x.isFinite && node.position.y.isFinite, "a node went non-finite")
+    }
+    Expect.that(abs(stretch(of: rope)) < 0.2, "a huge frame tore the rope apart")
 }
 
 // Zero and negative time steps are no-ops rather than NaN factories.
 Expect.suite("non-positive steps are ignored") {
-    var pendulum = Pendulum(angle: 0.3)
-    let before = pendulum
-    pendulum.step(dt: 0)
-    pendulum.step(dt: -1)
-    Expect.that(pendulum == before, "a non-positive dt changed the state")
+    var rope = makeRope()
+    let before = rope
+    rope.step(dt: 0)
+    rope.step(dt: -1)
+    Expect.that(rope == before, "a non-positive dt changed the rope")
 }
 
-// The bob hangs below the pivot, and leans the way the angle points.
-Expect.suite("bob offset geometry") {
-    var pendulum = Pendulum(length: 100)
-    Expect.near(pendulum.bobOffset.x, 0, 1e-9, "at rest the bob should be centred")
-    Expect.near(pendulum.bobOffset.y, -100, 1e-9, "at rest the bob should be a full cord below")
-
-    pendulum = Pendulum(length: 100, angle: .pi / 6)
-    Expect.near(pendulum.bobOffset.x, 50, 1e-6, "30 degrees should put the bob at half a cord across")
-    Expect.that(pendulum.bobOffset.y < 0, "the bob should always hang below the pivot")
+// Letting go of a rope you were swinging throws it. Verlet gives this for free:
+// the held node's velocity is the gap it was dragged across.
+Expect.suite("releasing a held end throws it") {
+    var rope = makeRope()
+    // Sweep the charm steadily sideways, then let go.
+    for step in 0...20 {
+        rope.holdEnd(at: CGPoint(x: Double(step) * 6, y: -290))
+        rope.step(dt: 1.0 / 120)
+    }
+    let releasedAt = rope.endPoint
+    rope.releaseEnd()
+    for _ in 0..<10 {
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.that(rope.endPoint.x > releasedAt.x, "the charm should keep travelling after release")
 }
 
-// Preferences clamp anything absurd that lands in UserDefaults.
-Expect.suite("preferences clamp out-of-range values") {
-    let defaults = UserDefaults(suiteName: "tassel.checks.\(UUID().uuidString)")!
-    let preferences = Preferences(defaults: defaults)
+// Holding the end pins it exactly, so a drag tracks the pointer.
+Expect.suite("a held end tracks the pointer exactly") {
+    var rope = makeRope()
+    let target = CGPoint(x: 120, y: -180)
+    rope.holdEnd(at: target)
+    rope.step(dt: 1.0 / 120)
+    Expect.near(rope.endPoint.x, target.x, 1e-9, "the held charm drifted off the pointer")
+    Expect.near(rope.endPoint.y, target.y, 1e-9, "the held charm drifted off the pointer")
+}
 
-    Expect.that(preferences.charm == Charm.fallback, "a fresh install should get the default charm")
-    Expect.that(preferences.isVisible, "a fresh install should be visible")
+// Yanking the anchor sideways makes the rope trail behind it.
+Expect.suite("the rope trails a yanked anchor") {
+    var rope = makeRope()
+    for step in 1...20 {
+        rope.moveAnchor(to: CGPoint(x: Double(step) * 7, y: 0))
+        rope.step(dt: 1.0 / 120)
+    }
+    Expect.that(rope.endPoint.x < rope.anchor.x, "the charm should lag behind an anchor moving right")
+    Expect.that(maximumBend(of: rope) > 1, "a trailing rope should curve")
+}
 
-    preferences.cordLength = 100_000
-    Expect.that(preferences.cordLength <= 400, "cord length was not clamped")
-    preferences.charmSize = -20
-    Expect.that(preferences.charmSize >= 12, "charm size was not clamped")
+// Teleporting the anchor re-hangs the rope instead of whipping it across.
+Expect.suite("placing the anchor does not whip the rope") {
+    var rope = makeRope()
+    rope.placeAnchor(at: CGPoint(x: 900, y: 400))
+    Expect.that(rope.isAtRest, "a placed anchor should leave the rope still")
+    Expect.near(rope.endPoint.x, 900, 1e-9, "the rope should hang under its new anchor")
+    Expect.near(rope.endPoint.y, 100, 1e-9, "the rope should hang a full length below it")
+}
 
-    preferences.charm = Charm(glyph: "\u{1F680}", name: "Custom")
-    Expect.that(preferences.charm.glyph == "\u{1F680}", "a custom glyph should round-trip")
+// A nudge should whip the rope, moving the free end more than the top.
+Expect.suite("a nudge whips the free end") {
+    var rope = makeRope()
+    rope.nudge(CGVector(dx: 20, dy: 0))
+    rope.step(dt: 1.0 / 120)
+    let topDrift = abs(rope.nodes[1].drift.x)
+    let endDrift = abs(rope.nodes[rope.nodes.count - 1].drift.x)
+    Expect.that(endDrift > topDrift, "the end should move more than the top")
+}
+
+// The charm is rotated to match the rope's last segment.
+Expect.suite("the end angle follows the rope") {
+    var rope = makeRope()
+    Expect.near(rope.endAngle, 0, 1e-6, "a rope hanging straight should not tilt the charm")
+
+    rope.holdEnd(at: CGPoint(x: 300, y: 0))
+    rope.step(dt: 1.0 / 120)
+    Expect.that(rope.endAngle > 0.2, "a rope pulled to the right should tilt the charm right")
 }
 
 // A screen deliberately shaped so every coordinate is easy to check by eye.
@@ -118,43 +309,56 @@ Expect.suite("fixed placement hangs from the top edge") {
     }
 }
 
-// The corners are actually in the corners.
-Expect.suite("corner presets land in corners") {
+// Left and right sit at the edges, centre in the middle.
+Expect.suite("presets sit where they say") {
     func solve(_ p: Placement) -> Anchor {
-        PlacementSolver.solve(placement: p, screen: screen, statusItemAnchor: nil, defaultCordLength: 92)
+        PlacementSolver.solve(placement: p, screen: screen, statusItemAnchor: nil, defaultCordLength: 150)
     }
-    let topLeft = solve(.fixed(x: 0.05, drop: 0.16))
-    let bottomRight = solve(.fixed(x: 0.95, drop: 0.86))
-    Expect.near(topLeft.pivot.x, 50, 1e-9, "top left should sit near the left edge")
-    Expect.near(topLeft.cordLength, 128, 1e-9, "top left should pay out a short cord")
-    Expect.near(bottomRight.pivot.x, 950, 1e-9, "bottom right should sit near the right edge")
-    Expect.near(bottomRight.cordLength, 688, 1e-9, "bottom right should pay out a long cord")
+    Expect.near(solve(.fixed(x: 0.06)).pivot.x, 60, 1e-9, "left should sit near the left edge")
+    Expect.near(solve(.fixed(x: 0.5)).pivot.x, 500, 1e-9, "centre should sit in the middle")
+    Expect.near(solve(.fixed(x: 0.94)).pivot.x, 940, 1e-9, "right should sit near the right edge")
+}
+
+// Every placement pays out the same rope: position is a column, not a height.
+Expect.suite("placement does not change the rope's length") {
+    let lengths = Placement.presets.map {
+        PlacementSolver.solve(
+            placement: $0.placement, screen: screen,
+            statusItemAnchor: CGPoint(x: 700, y: 780), defaultCordLength: 150
+        ).cordLength
+    }
+    Expect.that(lengths.allSatisfy { abs($0 - 150) < 1e-9 }, "a placement changed how far the charm hangs")
 }
 
 // Cord length is clamped so the charm can never hide in the menu bar or fall
 // off the bottom of the screen.
 Expect.suite("cord length is clamped to the screen") {
     let tooShort = PlacementSolver.solve(
-        placement: .fixed(x: 0.5, drop: 0),
-        screen: screen, statusItemAnchor: nil, defaultCordLength: 92
+        placement: .fixed(x: 0.5),
+        screen: screen, statusItemAnchor: nil, defaultCordLength: 0
     )
-    Expect.that(tooShort.cordLength >= PlacementSolver.minimumCord, "a zero drop should still pay out cord")
+    Expect.that(tooShort.cordLength >= PlacementSolver.minimumCord, "a zero length should still pay out rope")
 
     let tooLong = PlacementSolver.solve(
-        placement: .fixed(x: 0.5, drop: 1),
-        screen: screen, statusItemAnchor: nil, defaultCordLength: 92
+        placement: .fixed(x: 0.5),
+        screen: screen, statusItemAnchor: nil, defaultCordLength: 99_999
     )
-    Expect.that(tooLong.pivot.y - tooLong.cordLength >= screen.minY, "a full drop should stay on screen")
+    Expect.that(tooLong.pivot.y - tooLong.cordLength >= screen.minY, "a huge length should stay on screen")
 }
 
 // Out-of-range fractions are clamped rather than trusted.
 Expect.suite("placement fractions are clamped") {
     let wild = PlacementSolver.solve(
-        placement: .fixed(x: 40, drop: -12),
-        screen: screen, statusItemAnchor: nil, defaultCordLength: 92
+        placement: .fixed(x: 40),
+        screen: screen, statusItemAnchor: nil, defaultCordLength: 150
     )
     Expect.near(wild.pivot.x, screen.maxX, 1e-9, "x beyond 1 should clamp to the right edge")
-    Expect.that(wild.cordLength >= PlacementSolver.minimumCord, "a negative drop should clamp, not go negative")
+
+    let negative = PlacementSolver.solve(
+        placement: .fixed(x: -3),
+        screen: screen, statusItemAnchor: nil, defaultCordLength: 150
+    )
+    Expect.near(negative.pivot.x, screen.minX, 1e-9, "x below 0 should clamp to the left edge")
 }
 
 // A status item reported above the screen top is pulled back to the top edge.
@@ -169,15 +373,17 @@ Expect.suite("status item above the screen is clamped") {
     Expect.near(anchor.pivot.x, 700, 1e-9, "the horizontal anchor should be left alone")
 }
 
-// Dragging the charm somewhere and solving again should put it back there.
-Expect.suite("drag position round-trips") {
-    let dropped = CGPoint(x: 812, y: 240)
-    let placement = PlacementSolver.placement(forCharmAt: dropped, screen: screen)
+// Dropping the charm somewhere puts it in that column — and only that column.
+Expect.suite("a drop takes the column and ignores the height") {
+    let high = PlacementSolver.placement(forCharmAt: CGPoint(x: 812, y: 700), screen: screen)
+    let low = PlacementSolver.placement(forCharmAt: CGPoint(x: 812, y: 60), screen: screen)
+    Expect.that(high == low, "pointing lower down changed the placement — it should only take the column")
+
     let anchor = PlacementSolver.solve(
-        placement: placement, screen: screen, statusItemAnchor: nil, defaultCordLength: 92
+        placement: high, screen: screen, statusItemAnchor: nil, defaultCordLength: 150
     )
-    Expect.near(anchor.pivot.x, dropped.x, 1e-6, "the charm moved horizontally on the way back")
-    Expect.near(anchor.pivot.y - anchor.cordLength, dropped.y, 1e-6, "the charm moved vertically on the way back")
+    Expect.near(anchor.pivot.x, 812, 1e-6, "the charm moved sideways on the way back")
+    Expect.near(anchor.cordLength, 150, 1e-9, "dropping the charm changed how far it hangs")
 }
 
 // Placement survives a round trip through UserDefaults.
@@ -186,62 +392,11 @@ Expect.suite("placement persists") {
     let preferences = Preferences(defaults: defaults)
     Expect.that(preferences.placement == .followStatusItem, "a fresh install should follow the menu bar")
 
-    preferences.placement = .fixed(x: 0.95, drop: 0.86)
-    Expect.that(preferences.placement == .fixed(x: 0.95, drop: 0.86), "a fixed placement should round-trip")
+    preferences.placement = .fixed(x: 0.95)
+    Expect.that(preferences.placement == .fixed(x: 0.95), "a fixed placement should round-trip")
 
     preferences.placement = .followStatusItem
     Expect.that(preferences.placement == .followStatusItem, "switching back should round-trip")
-}
-
-// A push at the charm itself sends it the way you pushed.
-Expect.suite("a push at the bob moves it that way") {
-    var pendulum = Pendulum()
-    pendulum.step(dt: 1.0 / 60, bobAcceleration: CGVector(dx: 3000, dy: 0))
-    Expect.that(pendulum.angle > 0, "a rightward push should swing the charm right")
-
-    var other = Pendulum()
-    other.step(dt: 1.0 / 60, bobAcceleration: CGVector(dx: -3000, dy: 0))
-    Expect.that(other.angle < 0, "a leftward push should swing the charm left")
-}
-
-// A push straight along the cord is eaten by the cord, as a real one would be.
-Expect.suite("a push along the cord does nothing") {
-    var pendulum = Pendulum()
-    pendulum.step(dt: 1.0 / 60, bobAcceleration: CGVector(dx: 0, dy: -3000))
-    Expect.near(pendulum.angle, 0, 1e-9, "a straight-down push should not swing the charm")
-}
-
-// Dragging points the charm at the pointer.
-Expect.suite("holding points the charm at the pointer") {
-    var pendulum = Pendulum(length: 100)
-    pendulum.hold(towards: CGPoint(x: 100, y: 0), dt: 1.0 / 60)
-    Expect.near(pendulum.angle, .pi / 2, 1e-9, "dragging level right should lay the cord out right")
-
-    pendulum.hold(towards: CGPoint(x: 0, y: -100), dt: 1.0 / 60)
-    Expect.near(pendulum.angle, 0, 1e-9, "dragging straight down should hang it straight down")
-}
-
-// Dragging above the pivot is clamped rather than allowed to loop over the top.
-Expect.suite("holding is clamped to the horizontal") {
-    var pendulum = Pendulum(length: 100)
-    pendulum.hold(towards: CGPoint(x: 10, y: 400), dt: 1.0 / 60)
-    Expect.that(abs(pendulum.angle) <= .pi / 2 + 1e-9, "dragging upward escaped the clamp")
-}
-
-// Letting go throws the charm, rather than dropping it dead.
-Expect.suite("releasing a drag throws the charm") {
-    var pendulum = Pendulum(length: 100)
-    // Sweep the pointer steadily left to right across the bottom of the arc.
-    for step in 0...10 {
-        let x = -50.0 + Double(step) * 10
-        pendulum.hold(towards: CGPoint(x: x, y: -100), dt: 1.0 / 60)
-    }
-    Expect.that(pendulum.angularVelocity > 0.5, "a left-to-right drag should build rightward speed")
-
-    let released = pendulum.angularVelocity
-    pendulum.step(dt: 1.0 / 60)
-    Expect.that(pendulum.angle > 0, "it should keep travelling after release")
-    Expect.that(abs(pendulum.angularVelocity) < abs(released) * 1.5, "release speed should not blow up")
 }
 
 Expect.report()
