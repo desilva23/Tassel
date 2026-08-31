@@ -329,9 +329,9 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
   honoured from `UserDefaults` but nothing writes them yet.
 - The hotkey is hard-coded in `AppDelegate.setUpHotKey()`.
 - Placement is single-display: the charm always hangs on the menu bar screen.
-- Charms are limited to what the system emoji font has a glyph for. A maneki
-  neko, a daruma, a vegvisir and a pysanka all want to be here and none of them
-  exist as emoji, so they need real artwork and a way to load it.
+- The charms that need drawing are still undrawn: a maneki neko, a daruma, a
+  vegvisir, a pysanka. The loading works and the template is in
+  `Resources/Charms` — see [ASSETS.md](ASSETS.md) — but nobody has drawn them.
 - Rituals only fade. Several of these objects want a ritual with *stages* — a
   daruma has one eye, then two — which the current model has no room for.
 - The grab area is a circle around the charm, not its actual glyph shape, so a

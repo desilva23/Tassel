@@ -13,16 +13,25 @@ public struct Charm: Equatable, Identifiable, Sendable {
     public let threading: [Ornament]
     /// The one small thing this charm can have done to it.
     public let ritual: Ritual
+    /// Base name of a drawn PNG in `Resources/Charms`, without the extension.
+    ///
+    /// When there is one it is used on the rope; the `glyph` stays the charm's
+    /// stand-in in menus and the menu bar, and is also what gets drawn if the
+    /// file turns out to be missing. A charm should never fail to appear
+    /// because an artwork file was renamed.
+    public let artwork: String?
 
     public init(
         glyph: String,
         name: String,
         ritual: Ritual = .generic,
+        artwork: String? = nil,
         threading: [Ornament] = Ornament.standard
     ) {
         self.glyph = glyph
         self.name = name
         self.ritual = ritual
+        self.artwork = artwork
         self.threading = threading
     }
 

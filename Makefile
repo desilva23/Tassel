@@ -20,6 +20,15 @@ app: build
 	mkdir -p "$(BUNDLE)/Contents/MacOS" "$(BUNDLE)/Contents/Resources"
 	cp "$(BUILD_DIR)/$(APP_NAME)" "$(BUNDLE)/Contents/MacOS/$(APP_NAME)"
 	cp Resources/Info.plist "$(BUNDLE)/Contents/Info.plist"
+	## Drawn charm artwork, if there is any yet. The template is a guide for
+	## drawing and has no business being shipped.
+	@if ls Resources/Charms/*.png >/dev/null 2>&1; then \
+		for art in Resources/Charms/*.png; do \
+			case "$$art" in *TEMPLATE.png) continue;; esac; \
+			cp "$$art" "$(BUNDLE)/Contents/Resources/"; \
+		done; \
+		echo "bundled $$(ls $(BUNDLE)/Contents/Resources/*.png 2>/dev/null | wc -l | tr -d ' ') charm image(s)"; \
+	fi
 	## Ad-hoc signature: enough to run locally. Replace with your own Developer ID
 	## before distributing, or users will meet Gatekeeper.
 	codesign --force --sign - "$(BUNDLE)" >/dev/null 2>&1 || true

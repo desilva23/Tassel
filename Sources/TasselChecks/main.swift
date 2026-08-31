@@ -730,4 +730,36 @@ Expect.suite("a url cannot invent a charm") {
     Expect.that(Charm.named("Definitely Not A Charm") == nil, "an unknown name should not resolve")
 }
 
+// Artwork names become file names and bundle lookups, so the rule that governs
+// them is a boundary, not a convention.
+Expect.suite("artwork names are restricted") {
+    for good in ["daruma", "maneki-neko", "nimbu-mirchi", "charm2", "a"] {
+        Expect.that(Artwork.isValidName(good), "\(good) should be a usable artwork name")
+    }
+    for bad in ["", "../../etc/passwd", "/etc/passwd", "Daruma", "my charm",
+                "charm.png", "charm/../x", "charm\u{0000}", String(repeating: "a", count: 65)] {
+        Expect.that(!Artwork.isValidName(bad), "\(bad.debugDescription) should be refused as an artwork name")
+    }
+}
+
+// The anchor the template draws and the anchor the code uses must be the same
+// number, or every drawn charm hangs slightly wrong.
+Expect.suite("the artwork anchor is where the template says") {
+    Expect.near(Artwork.canvas, 1024, 1e-9, "the template canvas is 1024 square")
+    Expect.near(Artwork.anchorY * Artwork.canvas, 40, 1e-9, "the anchor is 40px down from the top")
+    Expect.near(Artwork.anchorX, 0.5, 1e-9, "the anchor is horizontally centred")
+    Expect.that(Artwork.scale > 1, "artwork is drawn larger than the charm size, not smaller")
+}
+
+// A charm may carry artwork, but must never depend on it: the glyph is what
+// appears in menus, and what gets drawn if the file has gone missing.
+Expect.suite("every charm survives its artwork going missing") {
+    for charm in Charm.builtIn {
+        Expect.that(!charm.glyph.isEmpty, "\(charm.name) has no glyph to fall back on")
+        if let artwork = charm.artwork {
+            Expect.that(Artwork.isValidName(artwork), "\(charm.name) has an unusable artwork name")
+        }
+    }
+}
+
 Expect.report()
