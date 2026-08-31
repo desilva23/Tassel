@@ -82,6 +82,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(sizeMenuItem())
         menu.addItem(positionMenuItem())
 
+        let beads = NSMenuItem(
+            title: "Beads on the Rope",
+            action: #selector(toggleOrnaments),
+            keyEquivalent: ""
+        )
+        beads.target = self
+        beads.state = preferences.showsOrnaments ? .on : .off
+        beads.toolTip = "Thread two beads and a smaller charm onto the rope."
+        menu.addItem(beads)
+
         let grab = NSMenuItem(
             title: "Grab With Pointer",
             action: #selector(toggleCatchesPointer),
@@ -91,6 +101,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         grab.state = preferences.catchesPointer ? .on : .off
         grab.toolTip = "Let the charm be pulled about and thrown. Turn off to make it purely decorative."
         menu.addItem(grab)
+
+        menu.addItem(.separator())
+
+        let login = NSMenuItem(title: "Open at Login", action: #selector(toggleLoginItem), keyEquivalent: "")
+        login.target = self
+        login.state = LoginItem.isEnabled ? .on : .off
+        if LoginItem.awaitingApproval {
+            login.title = "Open at Login (approve in System Settings)"
+        } else if !LoginItem.isInstalled {
+            // Registering a copy in a build folder points macOS at a path that
+            // the next clean deletes, so do not offer it until it is installed.
+            login.title = "Open at Login (move to Applications first)"
+            login.action = nil
+        }
+        menu.addItem(login)
 
         menu.addItem(.separator())
 
@@ -167,6 +192,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         submenu.addItem(.separator())
 
         let move = NSMenuItem(title: "Place\u{2026}", action: #selector(beginPositioning), keyEquivalent: "")
+        move.toolTip = "Click anywhere on screen to choose the column. You can also just drag the charm."
         move.target = self
         submenu.addItem(move)
 
@@ -196,6 +222,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         charmView.charm = preferences.charm
         charmView.charmSize = preferences.charmSize
         charmView.catchesPointer = preferences.catchesPointer
+        charmView.showsOrnaments = preferences.showsOrnaments
         charmView.onPositionChosen = { [weak self] point in
             self?.finishPositioning(at: point)
         }
@@ -297,9 +324,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         dropIn()
     }
 
+    @objc private func toggleLoginItem() {
+        if let error = LoginItem.setEnabled(!LoginItem.isEnabled) {
+            let alert = NSAlert(error: error)
+            alert.messageText = "Could not change the login item"
+            NSApp.activate(ignoringOtherApps: true)
+            alert.runModal()
+        }
+        refreshMenu()
+    }
+
+    @objc private func toggleOrnaments() {
+        preferences.showsOrnaments.toggle()
+        charmView.showsOrnaments = preferences.showsOrnaments
+        refreshMenu()
+    }
+
     @objc private func toggleCatchesPointer() {
         preferences.catchesPointer.toggle()
         charmView.catchesPointer = preferences.catchesPointer
+        charmView.showsOrnaments = preferences.showsOrnaments
         refreshMenu()
     }
 

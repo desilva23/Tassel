@@ -9,10 +9,13 @@ public struct Charm: Equatable, Identifiable, Sendable {
     public var id: String { glyph }
     public let glyph: String
     public let name: String
+    /// What is threaded on the rope above this charm.
+    public let threading: [Ornament]
 
-    public init(glyph: String, name: String) {
+    public init(glyph: String, name: String, threading: [Ornament] = Ornament.standard) {
         self.glyph = glyph
         self.name = name
+        self.threading = threading
     }
 
     public static let builtIn: [Charm] = [
@@ -24,6 +27,9 @@ public struct Charm: Equatable, Identifiable, Sendable {
         Charm(glyph: "\u{2B50}", name: "Star"),
         Charm(glyph: "\u{1F41A}", name: "Shell"),
         Charm(glyph: "\u{1F344}", name: "Mushroom"),
+        // A lemon under a row of chillies, hung over a doorway to turn away bad
+        // luck. The chillies are what is threaded on, so they come as a set.
+        Charm(glyph: "\u{1F34B}", name: "Nimbu Mirchi", threading: Ornament.nimbuMirchi),
     ]
 
     public static let fallback = builtIn[0]

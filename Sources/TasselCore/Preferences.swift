@@ -16,6 +16,7 @@ public final class Preferences {
         static let cordLength = "cordLength"
         static let charmSize = "charmSize"
         static let catchesPointer = "catchesPointer"
+        static let showsOrnaments = "showsOrnaments"
         static let placementKind = "placementKind"
         static let placementX = "placementX"
     }
@@ -25,6 +26,12 @@ public final class Preferences {
     public var catchesPointer: Bool {
         get { defaults.object(forKey: Key.catchesPointer) as? Bool ?? true }
         set { defaults.set(newValue, forKey: Key.catchesPointer) }
+    }
+
+    /// Whether beads and a smaller charm are threaded on the rope.
+    public var showsOrnaments: Bool {
+        get { defaults.object(forKey: Key.showsOrnaments) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.showsOrnaments) }
     }
 
     /// Where the charm hangs. Stored as a kind plus two fractions rather than a

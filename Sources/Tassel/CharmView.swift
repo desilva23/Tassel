@@ -21,6 +21,7 @@ final class CharmView: NSView {
 
     var charm: Charm = .fallback { didSet { invalidateRope() } }
     var charmSize: Double = 44 { didSet { invalidateRope() } }
+    var showsOrnaments = true { didSet { invalidateRope() } }
 
     /// A faint, slow drift so the charm sways while you work instead of hanging
     /// dead still. Set to 0 for a charm that only moves when something moves it.
@@ -47,11 +48,21 @@ final class CharmView: NSView {
 
     /// Pointer interaction state.
     private var lastCursor: CGPoint?
+    /// What the pointer is on, and what a drag from there will do.
+    enum GrabTarget {
+        /// The charm: pulling it stretches the rope, and it recoils.
+        case charm
+        /// The rope itself: dragging it carries the whole thing sideways.
+        case rope
+    }
+
     private var isGrabbed = false
-    private var isMovingAnchor = false
+    private var grabTarget: GrabTarget?
+    private var hoverTarget: GrabTarget?
     private var grabOrigin: CGPoint?
     private var didDragWhileGrabbed = false
     private var hasPointerCapture = false
+    private var isShowingHandCursor = false
 
     /// The rope's bounding box last time it was drawn, so the swept region can
     /// be invalidated without redrawing the whole screen.
@@ -60,6 +71,9 @@ final class CharmView: NSView {
     /// How close the pointer has to be before the charm can be grabbed, and
     /// before the rope starts getting batted around, relative to the charm size.
     private static let grabRadiusScale: Double = 0.85
+    /// How close counts as being on the rope, in points. Generous, because the
+    /// thread is two points wide and nobody can hit that.
+    private static let ropeGrabDistance: Double = 10
     private static let pushRadiusScale: Double = 2.6
     private static let pushStrength: Double = 7000
     /// The rope length the breeze was tuned against.
@@ -121,6 +135,8 @@ final class CharmView: NSView {
         frameLink = nil
         lastFrameTime = nil
         lastCursor = nil
+        hoverTarget = nil
+        updateCursor()
     }
 
     @objc private func tick(_ link: CADisplayLink) {
@@ -136,21 +152,18 @@ final class CharmView: NSView {
         updatePointerCapture(cursor: cursor)
 
         if isGrabbed, let cursor {
-            // A plain drag pulls the charm about on its rope and lets it
-            // spring back — the rope's resting length is never touched.
-            // Command-drag is the one that rehangs it somewhere else.
-            isMovingAnchor = NSEvent.modifierFlags.contains(.command)
-
-            if isMovingAnchor {
-                // Sliding it to a new column: the charm keeps its hanging
-                // height and only travels sideways.
-                rope.holdEnd(at: CGPoint(x: cursor.x, y: rope.anchor.y - rope.length))
-                onAnchorDragged?(cursor, false)
-            } else {
-                // Pulling it about: the charm tracks the pointer exactly while
-                // the rope between is left free to bow, trail, and stretch.
+            // What you took hold of decides what the drag does. Pulling the
+            // charm stretches the rope and lets it recoil; pulling the rope
+            // carries the whole thing to another column.
+            switch grabTarget {
+            case .charm:
                 rope.holdEnd(at: cursor)
+            case .rope:
+                onAnchorDragged?(cursor, false)
+            case nil:
+                break
             }
+
             if let origin = grabOrigin, hypot(cursor.x - origin.x, cursor.y - origin.y) > 3 {
                 didDragWhileGrabbed = true
             }
@@ -217,31 +230,75 @@ final class CharmView: NSView {
     private func updatePointerCapture(cursor: CGPoint?) {
         guard !isPositioning else { return }
 
-        var wanted = false
-        if catchesPointer, let cursor {
-            let end = rope.endPoint
-            wanted = isGrabbed
-                || hypot(end.x - cursor.x, end.y - cursor.y) <= charmSize * Self.grabRadiusScale
+        let target = cursor.flatMap(hitTarget(at:))
+        if target != hoverTarget {
+            hoverTarget = target
+            invalidateRope()
         }
 
+        updateCursor()
+
+        let wanted = catchesPointer && (isGrabbed || target != nil)
         guard wanted != hasPointerCapture else { return }
         hasPointerCapture = wanted
         window?.ignoresMouseEvents = !wanted
         invalidateRope()
     }
 
+    /// An open hand over anything that can be taken hold of, a closed one while
+    /// it is being held.
+    ///
+    /// Cursor *rects* would be the tidy way to do this, but they only apply to
+    /// the key window and this app never becomes key, so the cursor is set
+    /// directly. It is re-set every frame rather than only on the way in:
+    /// AppKit resets the cursor as the pointer moves inside a window with no
+    /// cursor rects of its own, so setting it once would not stick.
+    private func updateCursor() {
+        let wanted: NSCursor? = {
+            guard catchesPointer, !isPositioning else { return nil }
+            if isGrabbed { return .closedHand }
+            return hoverTarget == nil ? nil : .openHand
+        }()
+
+        if let wanted {
+            isShowingHandCursor = true
+            wanted.set()
+        } else if isShowingHandCursor {
+            // Only on the way out. Doing this every frame would fight whichever
+            // app is under the pointer for the rest of the screen.
+            isShowingHandCursor = false
+            NSCursor.arrow.set()
+        }
+    }
+
+    /// The charm wins ties: it sits on the end of the rope, so near the bottom
+    /// both are in range, and pulling the charm is the more likely intent.
+    private func hitTarget(at point: CGPoint) -> GrabTarget? {
+        guard catchesPointer else { return nil }
+        let end = rope.endPoint
+        if hypot(end.x - point.x, end.y - point.y) <= charmSize * Self.grabRadiusScale {
+            return .charm
+        }
+        if rope.distance(to: point) <= Self.ropeGrabDistance {
+            return .rope
+        }
+        return nil
+    }
+
     private func releasePointerCaptureIfNeeded() {
         guard !catchesPointer, hasPointerCapture else { return }
         hasPointerCapture = false
         isGrabbed = false
+        hoverTarget = nil
         rope.releaseEnd()
         window?.ignoresMouseEvents = true
+        updateCursor()
         invalidateRope()
     }
 
     /// Called when the user asks for the charm: a shove, so it drops in swinging.
     func nudge() {
-        rope.nudge(CGVector(dx: .random(in: 14...22) * (Bool.random() ? 1 : -1), dy: 0))
+        rope.nudge(CGVector(dx: .random(in: 420...620) * (Bool.random() ? 1 : -1), dy: 0))
     }
 
     func settle() {
@@ -276,11 +333,13 @@ final class CharmView: NSView {
             updatePreview(with: event)
             return
         }
-        guard catchesPointer else { return }
+        let point = convert(event.locationInWindow, from: nil)
+        guard let target = hitTarget(at: point) else { return }
         isGrabbed = true
-        isMovingAnchor = event.modifierFlags.contains(.command)
-        grabOrigin = convert(event.locationInWindow, from: nil)
+        grabTarget = target
+        grabOrigin = point
         didDragWhileGrabbed = false
+        updateCursor()
     }
 
     override func mouseDragged(with event: NSEvent) {
@@ -300,20 +359,26 @@ final class CharmView: NSView {
         guard isGrabbed else { return }
 
         let point = convert(event.locationInWindow, from: nil)
+        let target = grabTarget
         isGrabbed = false
+        grabTarget = nil
         grabOrigin = nil
-        // Verlet keeps the velocity the charm was dragged at, so simply letting
-        // it go throws it — and a stretched rope recoils on its own.
-        rope.releaseEnd()
 
-        if isMovingAnchor {
-            isMovingAnchor = false
+        switch target {
+        case .charm:
+            // Letting go of a stretched rope lets it recoil on its own.
+            rope.releaseEnd()
+            if !didDragWhileGrabbed {
+                // A click without a drag is a request for a swing.
+                nudge()
+            }
+        case .rope:
             onAnchorDragged?(point, true)
-        } else if !didDragWhileGrabbed {
-            // A click without a drag is a request for a swing.
-            nudge()
+        case nil:
+            break
         }
         didDragWhileGrabbed = false
+        updateCursor()
     }
 
     private func updatePreview(with event: NSEvent) {
@@ -330,6 +395,13 @@ final class CharmView: NSView {
         return isDark
             ? NSColor(srgbRed: 0.74, green: 0.56, blue: 0.26, alpha: 0.95)
             : NSColor(srgbRed: 0.40, green: 0.28, blue: 0.11, alpha: 0.90)
+    }
+
+    /// Bone, in both themes.
+    private static let beadColor = NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            ? NSColor(srgbRed: 0.94, green: 0.92, blue: 0.86, alpha: 1)
+            : NSColor(srgbRed: 0.99, green: 0.98, blue: 0.94, alpha: 1)
     }
 
     override func draw(_ dirtyRect: NSRect) {
@@ -356,13 +428,54 @@ final class CharmView: NSView {
         }
 
         let path = ropePath()
-        path.lineWidth = Self.threadWidth
+        // Thicker while the pointer is on it, so it reads as grabbable. Without
+        // this nobody would guess the thread does anything.
+        path.lineWidth = hoverTarget == .rope ? Self.threadWidth + 1.5 : Self.threadWidth
         path.lineCapStyle = .round
         path.lineJoinStyle = .round
         Self.cordColor.setStroke()
         path.stroke()
 
+        if showsOrnaments {
+            drawOrnaments()
+        }
         drawCharm(at: rope.endPoint, angle: rope.endAngle)
+    }
+
+    /// Beads and a smaller charm, threaded on the rope above the main one.
+    private func drawOrnaments() {
+        let threading = Ornament.layout(
+            charm.threading,
+            charmSize: charmSize,
+            ropeLength: rope.arcLength
+        )
+
+        for (ornament, fraction) in threading {
+            let point = rope.point(atFraction: fraction)
+            let lean = rope.tangentAngle(atFraction: fraction) + ornament.rotation
+
+            switch ornament.shape {
+            case .bead:
+                let radius = charmSize * ornament.scale
+                let box = CGRect(
+                    x: point.x - radius, y: point.y - radius,
+                    width: radius * 2, height: radius * 2
+                )
+                Self.beadColor.setFill()
+                NSBezierPath(ovalIn: box).fill()
+
+                let rim = NSBezierPath(ovalIn: box.insetBy(dx: 0.4, dy: 0.4))
+                rim.lineWidth = 0.8
+                Self.cordColor.withAlphaComponent(0.45).setStroke()
+                rim.stroke()
+
+            case .echo:
+                drawGlyph(charm.glyph, size: charmSize * ornament.scale, at: point, angle: lean)
+
+            case let .glyph(text):
+                drawGlyph(text, size: charmSize * ornament.scale, at: point, angle: lean)
+            }
+        }
     }
 
     /// A smooth curve through the rope's nodes.
@@ -400,30 +513,25 @@ final class CharmView: NSView {
     private func drawCharm(at point: CGPoint, angle: Double) {
         // A ring while the pointer is on the charm, so it is obvious that this
         // one spot is live and everywhere else is still click-through.
-        if hasPointerCapture {
-            let radius = charmSize * Self.grabRadiusScale
-            NSColor.labelColor.withAlphaComponent(isGrabbed ? 0.22 : 0.12).setFill()
-            NSBezierPath(ovalIn: CGRect(
-                x: point.x - radius, y: point.y - radius,
-                width: radius * 2, height: radius * 2
-            )).fill()
-        }
+        drawGlyph(charm.glyph, size: charmSize, at: point, angle: angle)
+    }
 
+    /// The charm's glyph, tipped to lie along the rope rather than staying
+    /// stubbornly upright.
+    private func drawGlyph(_ glyph: String, size: Double, at point: CGPoint, angle: Double) {
         let text = NSAttributedString(
-            string: charm.glyph,
-            attributes: [.font: NSFont.systemFont(ofSize: charmSize)]
+            string: glyph,
+            attributes: [.font: NSFont.systemFont(ofSize: size)]
         )
-        let size = text.size()
+        let measured = text.size()
 
         guard let context = NSGraphicsContext.current else { return }
         context.saveGraphicsState()
-        // Hang the charm off the rope's last segment, so it tips with the rope
-        // rather than staying stubbornly upright.
         let transform = NSAffineTransform()
         transform.translateX(by: point.x, yBy: point.y)
         transform.rotate(byRadians: -angle)
         transform.concat()
-        text.draw(at: NSPoint(x: -size.width / 2, y: -size.height / 2))
+        text.draw(at: NSPoint(x: -measured.width / 2, y: -measured.height / 2))
         context.restoreGraphicsState()
     }
 

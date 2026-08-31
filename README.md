@@ -20,27 +20,32 @@ macOS 14 or later. Xcode is **not** required — the Command Line Tools are enou
 xcode-select --install
 ```
 
-## Build and run
+## Install
 
 ```bash
-make run
+make install
 ```
 
-That builds the package, assembles `.build/Tassel.app`, ad-hoc signs it, and
-launches it. A clover appears in your menu bar with a cord hanging below it.
+Builds a release bundle, puts it in `/Applications`, and opens it. From then on
+it is an ordinary Mac app: double-click it, launch it from Spotlight, or tick
+**Open at Login** in its menu to have it start with the machine. Nothing needs a
+terminal again.
 
-Other targets:
+**Open at Login** stays greyed out until the app is installed somewhere
+permanent. `SMAppService` registers the bundle by path, so ticking it while
+running out of `.build` would point macOS at something the next `make clean`
+deletes. macOS may also list the app under System Settings ▸ General ▸ Login
+Items awaiting your approval the first time.
+
+To quit, use **Quit Tassel** in the menu bar item. To remove it, `make uninstall`.
+
+## Working on it
 
 ```bash
-make app     # build the .app bundle without launching it
+make run     # debug build, assembled and launched from .build
+make app     # build the bundle without launching it
 make check   # run the simulation checks
 make clean   # remove .build
-```
-
-To quit, use **Quit Tassel** in the menu bar item, or:
-
-```bash
-pkill -x Tassel
 ```
 
 ## Using it
@@ -49,8 +54,10 @@ pkill -x Tassel
 |---|---|
 | Bat it around | Sweep the pointer through it |
 | Swing it | Click it, or <kbd>⌥</kbd><kbd>⌘</kbd><kbd>L</kbd>, or **Drop In** in the menu |
-| Pull it down | Drag it — it stretches, and springs back when you let go |
-| Move it left or right | <kbd>⌘</kbd>-drag it, or the **Position** submenu |
+| Move it left or right | Drag the **rope** |
+| Pull it and let it recoil | Drag the **charm** |
+| Send it to a set spot | **Position** submenu, or **Place…** |
+| Bead it, or not | **Beads on the Rope** |
 | Resize it | **Size** submenu |
 | Change the charm | **Charm** submenu — eight built-ins, or **Custom Emoji…** |
 | Hide it | **Hide Charm** |
@@ -70,14 +77,42 @@ to a limit; let go and it recoils.
 Put the pointer on the charm and a faint ring appears: that is the one spot on
 the screen where the app is listening. Click it for a swing.
 
-**Drag it and the rope stretches.** The charm follows your pointer, the rope
-gives — up to about a third longer — and letting go springs it back to exactly
-where it started. The rope's resting length never changes, no matter how often
-it is pulled. The charm can be pulled down and aside but never lifted above the
-point it hangs from, which would fold the rope over itself.
+**What you take hold of decides what the drag does.** Grab the *rope* and drag,
+and the whole thing moves to another column. Grab the *charm* and drag, and the
+rope stretches and recoils — the charm always comes back where it was.
 
-<kbd>⌘</kbd>-drag slides it sideways into a different column instead, keeping its
-hanging height.
+The pointer says which is which: it becomes an open hand over anything that can
+be taken hold of, and a closed one while you are holding it. Cursor *rects*
+would be the tidy way to manage that, but they only apply to the key window and
+this app never becomes key, so the cursor is set directly, and re-set every
+frame — AppKit resets the cursor as the pointer moves inside a window with no
+cursor rects of its own, so setting it once does not stick.
+
+Splitting the two across a modifier was tried first and was a mistake twice over.
+It is undiscoverable, and the obvious modifier is booby-trapped: macOS reserves
+Command-drag on the window of an *inactive* app for its own "move a background
+window" gesture, and this app is never active, so a Command-drag may never reach
+the charm at all. Two parts of the same object that behave differently is a
+better answer than a modifier, and needs no explaining.
+
+### What is on the rope
+
+Threading is per charm. Most of them get two beads and a smaller copy of the
+charm, which is how these things are actually strung. **Nimbu Mirchi** — a lemon
+under a row of chillies, hung over a doorway to turn away bad luck — gets the
+chillies instead, lying across the string and pointing left and right by turns.
+**Beads on the Rope** turns the threading off.
+
+Each piece is placed a set number of charm-widths above the charm, not at a fixed
+fraction of the rope. A fraction that clears a small charm puts a bead squarely
+behind a large one, and the charm is resizable. Where each one lands is then
+measured *along* the rope rather than down the screen, so the threading keeps its
+spacing while the rope bends, swings and stretches.
+
+A set that will not fit has pieces left off the top rather than squeezed
+together. Squeezing keeps the count and ruins the spacing: on a short rope under
+a large charm it presses the lowest piece inside the charm itself. Threading on
+fewer looks like a choice; threading on all of them badly looks like a bug.
 
 **Grab With Pointer** in the menu turns all of that off. The charm still sways
 and can still be batted around by the pointer, but it stops taking clicks
@@ -157,7 +192,30 @@ where the rope reaches and it stretches to follow, then snaps back when released
 — bounded by a hard ceiling so a heavy shove cannot tear it apart. Long frames are
 clamped, so waking from sleep does not blow the solver up.
 
-The third is **`constraintDamping`**, and it is the subtle one. Because a Verlet
+The third is **`stretchRecovery`**, which sets how long the snap back takes. It
+defaults to a quick snap, which is what looks right; it is a dial because two
+more obvious approaches do not work at all, and it is worth recording why.
+Damping does nothing: the charm comes back because its *position* is being
+corrected by the solver, not because it carries velocity, so damping velocity
+leaves the timing untouched — measured across a 30× range, the return stayed at
+17–25ms. Softening the rope cannot do it either, because a spring's static sag
+and its period are the same number in disguise: `T = 2π√(sag/g)`. Any rope slack
+enough to return over half a second also hangs about eighteen points long doing
+nothing. So the rope's *rest length itself* recovers instead — stretching raises
+the length the constraints aim for, and letting go lets it creep back down. How
+the rope hangs is untouched: resting sag is identical whether recovery takes
+25ms or 1.5s, which the checks assert.
+
+A held rope needs care that a hanging one does not. While the charm is gripped,
+the length the constraints aim for tracks the *span* between the anchor and the
+hand — not the rope's own measured length, which includes however much it is
+bowing and so lets the bow justify itself, leaving the rope permanently slack.
+And every segment is then held to that span, because a rope pinned at both ends
+carries its own weight in compression along the lower half, a rope cannot carry
+compression, and it buckles: it settles into a stable belly hanging below the
+charm, which is real physics and looks like a bug.
+
+The fourth is **`constraintDamping`**, and it is the subtle one. Because a Verlet
 constraint is satisfied by moving a node, and moving a node *is* velocity, a
 solver that has not fully converged feeds a trickle of velocity in on every step
 — and ordinary damping never sees it, because that runs before the solve. Left
@@ -207,8 +265,13 @@ length under an ordinary pointer sweep and survives an absurd one, that letting
 go of a drag throws the charm in the direction it was moving, that a stretched
 rope recoils past where it was released rather than oozing back, that a stretched
 rope comes back to the exact length and resting spot it started from, that the
-charm cannot be dragged above its anchor, that no placement changes how far the
-charm hangs, that dragging the charm somewhere and
+charm cannot be dragged above its anchor, that no placement changes how far the charm hangs, that clicking the charm never
+leaves a loop of rope dangling below it, that a rope pulled taut really is taut
+rather than bowing, that everything threaded on the rope stays on it however the
+rope is bent or stretched, that no charm's threading hides behind it or collides
+with itself at any of the four charm sizes, that a chilli lies across the string
+rather than standing upright, that lowering the recovery rate really
+does slow the return, that recovery speed does not affect how the rope hangs, that dragging the charm somewhere and
 resolving it again puts it back in the same spot, and that preferences clamp junk
 that lands in `UserDefaults`.
 
@@ -229,10 +292,14 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
   click just outside a thin charm still passes through to whatever is behind it.
 - The rope always hangs from the very top of the screen, so it crosses the menu
   bar on its way down.
+- The charm cannot be carried closer to its anchor than `minimumSlack` allows. A
+  rope with far more length than gap has nowhere to put the excess but a loop,
+  and a real rope would; this one is simply not allowed to get there.
 - Cord length has no interface: it is read from `UserDefaults`, but nothing
   writes it. `defaults write com.example.tassel cordLength -float 220` works.
 - No Developer ID signature or notarisation, so anyone but you will meet
-  Gatekeeper. `make app` ad-hoc signs, which is enough to run locally.
+  Gatekeeper. The build ad-hoc signs, which is enough to run on this machine but
+  not to hand to anybody else.
 - Bundle identifier is still `com.example.tassel` in `Resources/Info.plist`.
 - The `LICENSE` file says `YOUR NAME HERE`. Put your name in it before you push.
 

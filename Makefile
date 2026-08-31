@@ -6,7 +6,7 @@ CONFIG      ?= debug
 BUILD_DIR   := .build/$(CONFIG)
 BUNDLE      := .build/$(APP_NAME).app
 
-.PHONY: all build app run check clean
+.PHONY: all build app run install uninstall check clean
 
 all: app
 
@@ -33,6 +33,21 @@ run: app
 ## Command Line Tools, so it cannot run on a CLT-only machine.
 check:
 	swift run -c $(CONFIG) TasselChecks
+
+## Put it somewhere permanent, so it survives `make clean` and can be launched
+## from Spotlight or set to open at login.
+install: CONFIG = release
+install: app
+	@pkill -x $(APP_NAME) 2>/dev/null || true
+	rm -rf "/Applications/$(APP_NAME).app"
+	cp -R "$(BUNDLE)" "/Applications/$(APP_NAME).app"
+	@echo "installed /Applications/$(APP_NAME).app"
+	open "/Applications/$(APP_NAME).app"
+
+uninstall:
+	@pkill -x $(APP_NAME) 2>/dev/null || true
+	rm -rf "/Applications/$(APP_NAME).app"
+	@echo "removed /Applications/$(APP_NAME).app"
 
 clean:
 	rm -rf .build

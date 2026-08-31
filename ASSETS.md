@@ -7,6 +7,7 @@ someone else's artwork, this is the document that answers it.
 | Asset | Source | Licence |
 |---|---|---|
 | Charm glyphs | Unicode code points, rendered at runtime by the system emoji font | Unicode code points are not copyrightable; the font is Apple's and is never redistributed |
+| Threading (beads, chillies) | Beads drawn at runtime with `NSBezierPath`; chillies are Unicode, as above | Original / not copyrightable |
 | Cord | Drawn at runtime with `NSBezierPath` in `CharmView.draw(_:)` | Original |
 | App icon | Not yet made | — |
 
