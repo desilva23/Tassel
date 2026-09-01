@@ -31,6 +31,27 @@ then hide the template layer before exporting.
 | Export | PNG, transparency on |
 | File name | Lowercase letters, digits and hyphens: `maneki-neko.png` |
 
+**Paint white white.** The most expensive mistake so far: the daruma's face was
+left as empty canvas rather than painted, which looks white on the iPad because
+the app's own background is white. Exported with transparency it came out as a
+hole, and the charm hung on a dark wallpaper with a black face. Anything meant
+to be white has to be a white stroke or fill on its own, not the absence of one.
+
+**Export as a file, not to Photos.** Saving to Photos flattens onto white and
+loses transparency entirely. Use Export or share into Files. Check it in
+Preview: transparent areas show a grey checkerboard, white shows as white.
+
+If you do end up with a flattened export, `Tools/unbackground.swift` recovers it:
+
+```bash
+swift Tools/unbackground.swift flattened.png Resources/Charms/name.png
+```
+
+It floods inward from the edges rather than deleting every white pixel, so white
+that is enclosed by the drawing — a face, an eye — survives. Edges that were
+antialiased against white are faded out to avoid a pale halo. It is a rescue,
+not a substitute: a proper transparent export is always cleaner.
+
 **Draw it bold.** The charm is drawn at roughly 60 points on screen, so a
 1024 canvas is being reduced about seventeen times over. Fine linework does not
 survive that: hairline strokes merge into a smudge and small features close up.

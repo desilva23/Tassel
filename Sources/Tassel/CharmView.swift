@@ -486,7 +486,7 @@ final class CharmView: NSView {
                 rim.stroke()
 
             case .echo:
-                drawCharmBody(size: charmSize * ornament.scale, at: point, angle: lean)
+                drawCharmBody(size: charmSize * ornament.scale, at: point, angle: lean, hanging: false)
 
             case let .glyph(text):
                 drawGlyph(text, size: charmSize * ornament.scale, at: point, angle: lean)
@@ -529,15 +529,20 @@ final class CharmView: NSView {
     private func drawCharm(at point: CGPoint, angle: Double) {
         // A ring while the pointer is on the charm, so it is obvious that this
         // one spot is live and everywhere else is still click-through.
-        drawCharmBody(size: charmSize, at: point, angle: angle)
+        drawCharmBody(size: charmSize, at: point, angle: angle, hanging: true)
     }
 
     /// The charm's glyph, tipped to lie along the rope rather than staying
     /// stubbornly upright.
     /// The charm itself: drawn artwork when it has any, its glyph otherwise.
-    private func drawCharmBody(size: Double, at point: CGPoint, angle: Double) {
+    ///
+    /// - Parameter hanging: true for the charm on the end, which hangs *from*
+    ///   the point; false for one threaded onto the rope, which the rope passes
+    ///   through and which therefore sits centred on it. Getting this wrong
+    ///   makes a threaded charm droop into whatever bead is below it.
+    private func drawCharmBody(size: Double, at point: CGPoint, angle: Double, hanging: Bool) {
         if let name = charm.artwork, let image = ArtworkStore.image(named: name) {
-            drawArtwork(image, size: size, at: point, angle: angle)
+            drawArtwork(image, size: size, at: point, angle: angle, hanging: hanging)
         } else {
             drawGlyph(charm.glyph, size: size, at: point, angle: angle)
         }
@@ -547,9 +552,17 @@ final class CharmView: NSView {
     /// than being centred on the rope's end the way a glyph is. That is what
     /// lets a drawn charm have a loop or a knot at its top and have the rope
     /// meet it exactly there.
-    private func drawArtwork(_ image: NSImage, size: Double, at point: CGPoint, angle: Double) {
+    private func drawArtwork(
+        _ image: NSImage,
+        size: Double,
+        at point: CGPoint,
+        angle: Double,
+        hanging: Bool
+    ) {
         let height = size * Artwork.scale
         let width = height * (image.size.width / max(image.size.height, 1))
+        // Hanging from the anchor, or centred on the rope like a bead.
+        let drop = hanging ? (1 - Artwork.anchorY) : 0.5
 
         guard let context = NSGraphicsContext.current else { return }
         context.saveGraphicsState()
@@ -561,7 +574,7 @@ final class CharmView: NSView {
         image.draw(
             in: NSRect(
                 x: -width * Artwork.anchorX,
-                y: -height * (1 - Artwork.anchorY),
+                y: -height * drop,
                 width: width,
                 height: height
             ),
