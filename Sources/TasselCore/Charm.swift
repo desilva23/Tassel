@@ -78,6 +78,14 @@ public struct Charm: Equatable, Identifiable, Sendable {
             glyph: "\u{1F344}", name: "Mushroom",
             ritual: Ritual(name: "Find Another", days: 14)
         ),
+        // Drawn by hand rather than borrowed from the emoji font, because a
+        // daruma is not in it. Both eyes are painted, which by the tradition
+        // means a wish already granted.
+        Charm(
+            glyph: "\u{1F3EE}", name: "Daruma",
+            ritual: Ritual(name: "Paint an Eye", days: 30),
+            artwork: "daruma"
+        ),
         // A lemon under a row of chillies, hung over a doorway to turn away bad
         // luck. It is taken down and replaced when it dries out, traditionally
         // on a Saturday — so a week is not an arbitrary number here.

@@ -10,6 +10,7 @@ someone else's artwork, this is the document that answers it.
 | Threading (beads, chillies) | Beads drawn at runtime with `NSBezierPath`; chillies are Unicode, as above | Original / not copyrightable |
 | Cord | Drawn at runtime with `NSBezierPath` in `CharmView.draw(_:)` | Original |
 | App icon | Not yet made | — |
+| `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | Original |
 
 ## Drawing a charm
@@ -29,6 +30,13 @@ then hide the template layer before exporting.
 | Safe area | Inside the dashed circle |
 | Export | PNG, transparency on |
 | File name | Lowercase letters, digits and hyphens: `maneki-neko.png` |
+
+**Draw it bold.** The charm is drawn at roughly 60 points on screen, so a
+1024 canvas is being reduced about seventeen times over. Fine linework does not
+survive that: hairline strokes merge into a smudge and small features close up.
+Think of it the way a road sign is drawn rather than an illustration — few
+shapes, thick strokes, strong contrast between the parts that must stay
+separate. Check it by shrinking your canvas to 60px and looking at it.
 
 **The anchor is the one measurement that matters.** The rope stops exactly
 there, so whatever the charm hangs by — a loop, a knot, the top of its head —
