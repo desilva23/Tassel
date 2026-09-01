@@ -541,8 +541,8 @@ final class CharmView: NSView {
     ///   through and which therefore sits centred on it. Getting this wrong
     ///   makes a threaded charm droop into whatever bead is below it.
     private func drawCharmBody(size: Double, at point: CGPoint, angle: Double, hanging: Bool) {
-        if let name = charm.artwork, let image = ArtworkStore.image(named: name) {
-            drawArtwork(image, size: size, at: point, angle: angle, hanging: hanging)
+        if let name = charm.artwork, let artwork = ArtworkStore.artwork(named: name) {
+            drawArtwork(artwork, size: size, at: point, angle: angle, hanging: hanging)
         } else {
             drawGlyph(charm.glyph, size: size, at: point, angle: angle)
         }
@@ -553,17 +553,12 @@ final class CharmView: NSView {
     /// lets a drawn charm have a loop or a knot at its top and have the rope
     /// meet it exactly there.
     private func drawArtwork(
-        _ image: NSImage,
+        _ artwork: ArtworkStore.Loaded,
         size: Double,
         at point: CGPoint,
         angle: Double,
         hanging: Bool
     ) {
-        let height = size * Artwork.scale
-        let width = height * (image.size.width / max(image.size.height, 1))
-        // Hanging from the anchor, or centred on the rope like a bead.
-        let drop = hanging ? (1 - Artwork.anchorY) : 0.5
-
         guard let context = NSGraphicsContext.current else { return }
         context.saveGraphicsState()
         let transform = NSAffineTransform()
@@ -571,12 +566,12 @@ final class CharmView: NSView {
         transform.rotate(byRadians: -angle)
         transform.concat()
 
-        image.draw(
-            in: NSRect(
-                x: -width * Artwork.anchorX,
-                y: -height * drop,
-                width: width,
-                height: height
+        artwork.image.draw(
+            in: Artwork.drawRect(
+                content: artwork.content,
+                aspect: artwork.aspect,
+                charmSize: size,
+                hanging: hanging
             ),
             from: .zero,
             operation: .sourceOver,

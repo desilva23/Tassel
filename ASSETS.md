@@ -25,6 +25,7 @@ then hide the template layer before exporting.
 | | |
 |---|---|
 | Canvas | 1024 x 1024, square |
+| Placement | Roughly centred. Empty margin is trimmed automatically |
 | Background | Transparent. The template's checkerboard shows where that is |
 | The anchor | 40px down from the top edge, horizontally centred |
 | Safe area | Inside the dashed circle |
@@ -59,10 +60,16 @@ Think of it the way a road sign is drawn rather than an illustration — few
 shapes, thick strokes, strong contrast between the parts that must stay
 separate. Check it by shrinking your canvas to 60px and looking at it.
 
-**The anchor is the one measurement that matters.** The rope stops exactly
-there, so whatever the charm hangs by — a loop, a knot, the top of its head —
-belongs at that crosshair. Everything else is taste. A charm drawn with its top
-somewhere else will hang as though the string is growing out of its middle.
+**You do not have to be precise about placement.** The app finds the drawn part
+of the image and hangs the charm by the top of *that*, ignoring empty margin, so
+a charm drawn a little high or low or small still meets the rope cleanly and
+still comes out the same size as every other charm. The crosshair on the
+template is a guide, not a requirement.
+
+What does matter is that the top of the drawing is whatever the charm should
+hang by — its loop, its knot, the top of its head. Do not leave a stray mark
+above it: a single stroke floating near the top of the page is, as far as the
+app can tell, the top of the charm, and the rope will attach to that.
 
 Then drop the file in `Resources/Charms/` and add the charm in
 `Sources/TasselCore/Charm.swift`:

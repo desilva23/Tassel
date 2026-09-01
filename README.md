@@ -262,6 +262,13 @@ stopping it. Damping the velocity *after* the solve fixes it outright, and a
 small value does the job — measured over ten seconds, residual motion goes from
 roughly 14 points per second to zero while a throw keeps most of its carry.
 
+**Drawn charms hang by their drawing, not their page.** Artwork is placed by
+finding the opaque part of the image and hanging the charm from the top of that.
+Anchoring to the canvas instead means every millimetre of empty margin somebody
+leaves above their drawing becomes a length of bare rope, and two charms drawn
+at different sizes on the page hang at different sizes on screen. Neither is
+something an illustrator should have to think about.
+
 **It reacts without ever watching you.** The pointer is polled from
 `NSEvent.mouseLocation` in the frame loop rather than watched with a global event
 monitor, so the charm can respond to the pointer without the app asking for

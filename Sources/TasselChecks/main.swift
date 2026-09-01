@@ -762,4 +762,48 @@ Expect.suite("every charm survives its artwork going missing") {
     }
 }
 
+// Artwork is placed by where the drawing actually is, not by the canvas it was
+// drawn on, so a charm that left a margin does not hang from a length of bare
+// rope where that margin is.
+Expect.suite("artwork hangs by its drawing, not its canvas") {
+    let full = CGRect(x: 0, y: 0, width: 1, height: 1)
+    // The same charm drawn small in the middle of its page.
+    let inset = CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
+
+    let a = Artwork.drawRect(content: full, aspect: 1, charmSize: 60, hanging: true)
+    let b = Artwork.drawRect(content: inset, aspect: 1, charmSize: 60, hanging: true)
+
+    // Both must put the top of the drawing exactly on the rope.
+    Expect.near(a.maxY, 0, 1e-9, "a full-canvas drawing should start at the rope")
+    Expect.near(b.origin.y + inset.maxY * b.height, 0, 1e-9, "an inset drawing should start at the rope too")
+
+    // And both must come out the same size on screen.
+    Expect.near(full.height * a.height, inset.height * b.height, 1e-9, "the two should draw at the same size")
+    Expect.near(full.height * a.height, 60 * Artwork.scale, 1e-9, "the drawing should be scale times the charm size")
+}
+
+// Horizontally, the drawing is centred on the rope however it sat on the page.
+Expect.suite("artwork is centred on the rope") {
+    let offCentre = CGRect(x: 0.1, y: 0.2, width: 0.4, height: 0.6)
+    let rect = Artwork.drawRect(content: offCentre, aspect: 1, charmSize: 50, hanging: true)
+    Expect.near(rect.origin.x + offCentre.midX * rect.width, 0, 1e-9, "the drawing should straddle the rope")
+}
+
+// Threaded on rather than hung from: the rope passes through the middle.
+Expect.suite("a threaded charm sits centred on the rope") {
+    let content = CGRect(x: 0.1, y: 0.1, width: 0.8, height: 0.8)
+    let rect = Artwork.drawRect(content: content, aspect: 1, charmSize: 40, hanging: false)
+    Expect.near(rect.origin.y + content.midY * rect.height, 0, 1e-9, "a threaded charm should be centred, not hung")
+
+    let hung = Artwork.drawRect(content: content, aspect: 1, charmSize: 40, hanging: true)
+    Expect.that(hung.origin.y < rect.origin.y, "a hanging charm should sit lower than a threaded one")
+}
+
+// A blank or broken image must not divide by zero.
+Expect.suite("empty artwork does not explode") {
+    let rect = Artwork.drawRect(content: .zero, aspect: 0, charmSize: 40, hanging: true)
+    Expect.that(rect.width.isFinite && rect.height.isFinite, "an empty image produced a non-finite rect")
+    Expect.that(rect.height > 0, "an empty image produced no height")
+}
+
 Expect.report()
