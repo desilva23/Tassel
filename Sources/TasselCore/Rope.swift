@@ -511,3 +511,18 @@ extension Comparable {
         min(max(self, range.lowerBound), range.upperBound)
     }
 }
+
+extension Rope {
+    /// Places something on the rope: moved to `point`, and turned so that its
+    /// own "down" runs along the rope at `heading`.
+    ///
+    /// `heading` is measured from straight down, positive toward the right, and
+    /// a positive rotation turns "down" toward the right, so the two share a
+    /// sign. For a long time they were given opposite signs, which bent every
+    /// charm back against its rope like a mirror image — invisible on a round
+    /// nazar, obvious the moment a daruma swung.
+    public static func placement(at point: CGPoint, heading: Double) -> CGAffineTransform {
+        CGAffineTransform(translationX: point.x, y: point.y).rotated(by: heading)
+    }
+}
+

@@ -53,6 +53,25 @@ public enum Artwork {
         )
     }
 
+    /// The drawn part of the artwork, in the charm's own frame — where the rope
+    /// meets it is the origin and "down" is the rope's direction. This is what a
+    /// click has to land in, rather than a circle round the end of the rope,
+    /// which misses most of anything that hangs below it.
+    public static func contentBox(
+        content: CGRect,
+        aspect: Double,
+        charmSize: Double,
+        hanging: Bool
+    ) -> CGRect {
+        let rect = drawRect(content: content, aspect: aspect, charmSize: charmSize, hanging: hanging)
+        return CGRect(
+            x: rect.minX + content.minX * rect.width,
+            y: rect.minY + content.minY * rect.height,
+            width: content.width * rect.width,
+            height: content.height * rect.height
+        )
+    }
+
     /// Where the artwork folder lives, relative to the repository root.
     public static let folder = "Resources/Charms"
 

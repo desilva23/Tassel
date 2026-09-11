@@ -68,6 +68,9 @@ final class CharmView: NSView {
 
     private var isGrabbed = false
     private var grabTarget: GrabTarget?
+    /// From the pointer to the rope's end, fixed when the charm is taken hold
+    /// of, so the charm stays under the pointer where it was gripped.
+    private var grabOffset = CGVector(dx: 0, dy: 0)
     private var hoverTarget: GrabTarget?
     private var grabOrigin: CGPoint?
     private var didDragWhileGrabbed = false
@@ -167,7 +170,7 @@ final class CharmView: NSView {
             // carries the whole thing to another column.
             switch grabTarget {
             case .charm:
-                rope.holdEnd(at: cursor)
+                rope.holdEnd(at: CGPoint(x: cursor.x + grabOffset.dx, y: cursor.y + grabOffset.dy))
             case .rope:
                 onAnchorDragged?(cursor, false)
             case nil:
@@ -285,14 +288,38 @@ final class CharmView: NSView {
     /// both are in range, and pulling the charm is the more likely intent.
     private func hitTarget(at point: CGPoint) -> GrabTarget? {
         guard catchesPointer else { return nil }
-        let end = rope.endPoint
-        if hypot(end.x - point.x, end.y - point.y) <= charmSize * Self.grabRadiusScale {
+        if charmContains(point) {
             return .charm
         }
         if rope.distance(to: point) <= Self.ropeGrabDistance {
             return .rope
         }
         return nil
+    }
+
+    /// Whether `point` is on the charm as it is actually drawn.
+    ///
+    /// Tested in the charm's own frame — rope's end at the origin, rope's
+    /// direction as down — so a charm swung out at an angle is hit where it is,
+    /// not where it would be hanging straight. A glyph is centred on the rope's
+    /// end, but artwork hangs below it, so a circle round the end would miss
+    /// most of a daruma.
+    private func charmContains(_ point: CGPoint) -> Bool {
+        let local = point.applying(
+            Rope.placement(at: rope.endPoint, heading: rope.endAngle).inverted()
+        )
+        guard let artwork = currentArtwork else {
+            return hypot(local.x, local.y) <= charmSize * Self.grabRadiusScale
+        }
+        let box = Artwork.contentBox(
+            content: artwork.content,
+            aspect: artwork.aspect,
+            charmSize: charmSize,
+            hanging: true
+        )
+        // A little slack round the edge, because nobody clicks a silhouette
+        // to the pixel.
+        return box.insetBy(dx: -6, dy: -6).contains(local)
     }
 
     private func releasePointerCaptureIfNeeded() {
@@ -343,13 +370,32 @@ final class CharmView: NSView {
             updatePreview(with: event)
             return
         }
+        if event.modifierFlags.contains(.control) {
+            // Control-click is a right-click on a Mac.
+            rightMouseDown(with: event)
+            return
+        }
         let point = convert(event.locationInWindow, from: nil)
         guard let target = hitTarget(at: point) else { return }
         isGrabbed = true
         grabTarget = target
         grabOrigin = point
+        grabOffset = CGVector(dx: rope.endPoint.x - point.x, dy: rope.endPoint.y - point.y)
         didDragWhileGrabbed = false
         updateCursor()
+    }
+
+    /// Supplies the menu shown when the charm is right-clicked.
+    var contextMenu: (() -> NSMenu?)?
+
+    /// Right-click, or Control-click, on the charm or its rope offers the
+    /// charm's ritual right there, rather than making you go and find it in the
+    /// menu bar.
+    override func rightMouseDown(with event: NSEvent) {
+        guard !isPositioning else { return }
+        let point = convert(event.locationInWindow, from: nil)
+        guard hitTarget(at: point) != nil, let menu = contextMenu?() else { return }
+        NSMenu.popUpContextMenu(menu, with: event, for: self)
     }
 
     override func mouseDragged(with event: NSEvent) {
@@ -542,11 +588,16 @@ final class CharmView: NSView {
     ///   the point; false for one threaded onto the rope, which the rope passes
     ///   through and which therefore sits centred on it. Getting this wrong
     ///   makes a threaded charm droop into whatever bead is below it.
-    private func drawCharmBody(size: Double, at point: CGPoint, angle: Double, hanging: Bool) {
-        // The stage's artwork first, then the charm's own, then its glyph: a
-        // missing file should cost the charm its look, never its presence.
+    /// The artwork showing right now: the ritual stage's, then the charm's own.
+    /// Nil means the glyph is drawn — a missing file should cost the charm its
+    /// look, never its presence.
+    private var currentArtwork: ArtworkStore.Loaded? {
         let names = [charm.artwork(atStage: ritualStage), charm.artwork].compactMap { $0 }
-        if let artwork = names.lazy.compactMap(ArtworkStore.artwork(named:)).first {
+        return names.lazy.compactMap(ArtworkStore.artwork(named:)).first
+    }
+
+    private func drawCharmBody(size: Double, at point: CGPoint, angle: Double, hanging: Bool) {
+        if let artwork = currentArtwork {
             drawArtwork(artwork, size: size, at: point, angle: angle, hanging: hanging)
         } else {
             drawGlyph(charm.glyph, size: size, at: point, angle: angle)
@@ -566,10 +617,7 @@ final class CharmView: NSView {
     ) {
         guard let context = NSGraphicsContext.current else { return }
         context.saveGraphicsState()
-        let transform = NSAffineTransform()
-        transform.translateX(by: point.x, yBy: point.y)
-        transform.rotate(byRadians: -angle)
-        transform.concat()
+        context.cgContext.concatenate(Rope.placement(at: point, heading: angle))
 
         artwork.image.draw(
             in: Artwork.drawRect(
@@ -594,10 +642,7 @@ final class CharmView: NSView {
 
         guard let context = NSGraphicsContext.current else { return }
         context.saveGraphicsState()
-        let transform = NSAffineTransform()
-        transform.translateX(by: point.x, yBy: point.y)
-        transform.rotate(byRadians: -angle)
-        transform.concat()
+        context.cgContext.concatenate(Rope.placement(at: point, heading: angle))
         text.draw(at: NSPoint(x: -measured.width / 2, y: -measured.height / 2))
         context.restoreGraphicsState()
     }

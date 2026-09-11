@@ -84,22 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(sizeMenuItem())
         menu.addItem(positionMenuItem())
 
-        let charm = preferences.charm
-        let ritual = charm.ritual
-        let title: String
-        if let stage = ritual.stage(at: preferences.ritualStage(forCharm: charm.glyph)) {
-            // A staged ritual offers whatever moves it on from where it is.
-            title = stage.action
-        } else {
-            let due = ritual.isDue(lastPerformed: preferences.lastRitual(forCharm: charm.glyph))
-            title = due ? "\(ritual.name)  \u{00B7}  due" : ritual.name
-        }
-        let ritualItem = NSMenuItem(title: title, action: #selector(performRitual), keyEquivalent: "")
-        ritualItem.target = self
-        ritualItem.toolTip = ritual.isStaged
-            ? "\(ritual.name). It waits for as long as it takes."
-            : "The one thing this charm asks of you. It fades if left alone."
-        menu.addItem(ritualItem)
+        menu.addItem(ritualMenuItem())
 
         menu.addItem(.separator())
 
@@ -148,6 +133,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
         )
 
+        return menu
+    }
+
+    /// The current charm's ritual, named for whatever it needs next. Shared by
+    /// the menu bar and the right-click menu so the two can never disagree.
+    private func ritualMenuItem() -> NSMenuItem {
+        let charm = preferences.charm
+        let ritual = charm.ritual
+        let title: String
+        if let stage = ritual.stage(at: preferences.ritualStage(forCharm: charm.glyph)) {
+            // A staged ritual offers whatever moves it on from where it is.
+            title = stage.action
+        } else {
+            let due = ritual.isDue(lastPerformed: preferences.lastRitual(forCharm: charm.glyph))
+            title = due ? "\(ritual.name)  \u{00B7}  due" : ritual.name
+        }
+        let item = NSMenuItem(title: title, action: #selector(performRitual), keyEquivalent: "")
+        item.target = self
+        item.toolTip = ritual.isStaged
+            ? "\(ritual.name). It waits for as long as it takes."
+            : "The one thing this charm asks of you. It fades if left alone."
+        return item
+    }
+
+    /// What right-clicking the charm offers: its name, and its ritual.
+    private func charmContextMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.addItem(.sectionHeader(title: preferences.charm.name))
+        menu.addItem(ritualMenuItem())
         return menu
     }
 
@@ -246,6 +260,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         charmView.showsOrnaments = preferences.showsOrnaments
         charmView.onPositionChosen = { [weak self] point in
             self?.finishPositioning(at: point)
+        }
+        charmView.contextMenu = { [weak self] in
+            self?.charmContextMenu()
         }
         charmView.onAnchorDragged = { [weak self] point, isFinal in
             self?.handleAnchorDrag(to: point, isFinal: isFinal)

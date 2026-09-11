@@ -876,4 +876,31 @@ Expect.suite("ritual stages persist per charm") {
     Expect.that(preferences.ritualStage(forCharm: "a") == 0, "a negative stage should not be stored")
 }
 
+// A charm continues the line of its rope. The rotation that places it got its
+// sign backwards for a long time, so every charm bent back against its rope like
+// a mirror image — hidden by a round nazar, obvious on a swinging daruma.
+Expect.suite("a charm continues the line of its rope") {
+    for degrees in [-60.0, -25, 0, 25, 60] {
+        let heading = degrees * .pi / 180
+        let placement = Rope.placement(at: CGPoint(x: 100, y: 200), heading: heading)
+        let origin = CGPoint.zero.applying(placement)
+        let down = CGPoint(x: 0, y: -1).applying(placement)
+        // Where the charm's own "down" ends up, as a direction.
+        let dx = down.x - origin.x, dy = down.y - origin.y
+        Expect.near(dx, sin(heading), 1e-9, "at \(Int(degrees)) degrees the charm leans the wrong way sideways")
+        Expect.near(dy, -cos(heading), 1e-9, "at \(Int(degrees)) degrees the charm points the wrong way vertically")
+        Expect.near(origin.x, 100, 1e-9, "the charm should sit at the rope's end")
+    }
+}
+
+// What can be clicked is the drawn charm, hanging below the rope's end.
+Expect.suite("a hanging charm's clickable area is where it is drawn") {
+    let content = CGRect(x: 0.1, y: 0.05, width: 0.8, height: 0.86)
+    let box = Artwork.contentBox(content: content, aspect: 1, charmSize: 60, hanging: true)
+    Expect.near(box.maxY, 0, 1e-9, "the top of the drawing should meet the rope's end")
+    Expect.near(box.midX, 0, 1e-9, "the drawing should straddle the rope")
+    Expect.near(box.height, 60 * Artwork.scale, 1e-9, "the box should be as tall as the drawing is drawn")
+    Expect.that(box.minY < -60, "the box should reach all the way down a hanging charm, not stop near the rope")
+}
+
 Expect.report()

@@ -59,8 +59,8 @@ make clean   # remove .build
 | Send it to a set spot | **Position** submenu, or **Place…** |
 | Bead it, or not | **Beads on the Rope** |
 | Resize it | **Size** submenu |
-| Change the charm | **Charm** submenu — eleven built-ins, or **Custom Emoji…** |
-| Tend it | The ritual at the top of the menu |
+| Change the charm | **Charm** submenu — twelve built-ins, or **Custom Emoji…** |
+| Tend it | **Right-click the charm**, or the ritual at the top of the menu |
 | Hide it | **Hide Charm** |
 
 ### Reaching for it
@@ -74,6 +74,10 @@ of pinning it to one side.
 
 Drag the charm past where the rope reaches and the rope stretches to follow, up
 to a limit; let go and it recoils.
+
+Right-click the charm — or Control-click it — and its ritual is offered right
+there: **Make a Wish** on a blank daruma, **Ring It** on the bell. No trip to
+the menu bar.
 
 Put the pointer on the charm and a faint ring appears: that is the one spot on
 the screen where the app is listening. Click it for a swing.
