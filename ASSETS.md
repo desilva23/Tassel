@@ -60,7 +60,9 @@ add a point inside it as fractions across and down the image.
 swift Tools/unbackground.swift coin.png Resources/Charms/lucky-coin.png 0.5,0.52 0.5,0.041
 ```
 
-That clears the coin's hole and the inside of its red loop. Edges that were
+That clears a coin's hole and the inside of its loop. Better still is to erase
+them in the drawing app and export with transparency, which needs no tool at all
+— the coin in `Resources/Charms` was finally made that way. Edges that were
 antialiased against white are faded out to avoid a pale halo. It is a rescue,
 not a substitute: a proper transparent export is always cleaner.
 
