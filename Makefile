@@ -3,7 +3,10 @@
 
 APP_NAME    := Tassel
 CONFIG      ?= debug
-BUILD_DIR   := .build/$(CONFIG)
+# `=`, not `:=`. `:=` fixes the path the moment this file is read, while CONFIG
+# is still debug, so `make install` built a release binary and then shipped the
+# old debug one — for three installs running, before anyone noticed.
+BUILD_DIR   = .build/$(CONFIG)
 BUNDLE      := .build/$(APP_NAME).app
 
 .PHONY: all build app run install uninstall check clean
@@ -48,6 +51,9 @@ check:
 install: CONFIG = release
 install: app
 	@pkill -x $(APP_NAME) 2>/dev/null || true
+	@## Wait for it to actually quit: `open` on an app that is still shutting down
+	@## brings the old one forward instead of launching the new one.
+	@while pgrep -x $(APP_NAME) >/dev/null; do sleep 0.1; done
 	rm -rf "/Applications/$(APP_NAME).app"
 	cp -R "$(BUNDLE)" "/Applications/$(APP_NAME).app"
 	@echo "installed /Applications/$(APP_NAME).app"
