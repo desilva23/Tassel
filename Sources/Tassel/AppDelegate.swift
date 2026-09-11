@@ -84,15 +84,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(sizeMenuItem())
         menu.addItem(positionMenuItem())
 
-        let ritual = preferences.charm.ritual
-        let due = ritual.isDue(lastPerformed: preferences.lastRitual(forCharm: preferences.charm.glyph))
-        let ritualItem = NSMenuItem(
-            title: due ? "\(ritual.name)  \u{00B7}  due" : ritual.name,
-            action: #selector(performRitual),
-            keyEquivalent: ""
-        )
+        let charm = preferences.charm
+        let ritual = charm.ritual
+        let title: String
+        if let stage = ritual.stage(at: preferences.ritualStage(forCharm: charm.glyph)) {
+            // A staged ritual offers whatever moves it on from where it is.
+            title = stage.action
+        } else {
+            let due = ritual.isDue(lastPerformed: preferences.lastRitual(forCharm: charm.glyph))
+            title = due ? "\(ritual.name)  \u{00B7}  due" : ritual.name
+        }
+        let ritualItem = NSMenuItem(title: title, action: #selector(performRitual), keyEquivalent: "")
         ritualItem.target = self
-        ritualItem.toolTip = "The one thing this charm asks of you. It fades if left alone."
+        ritualItem.toolTip = ritual.isStaged
+            ? "\(ritual.name). It waits for as long as it takes."
+            : "The one thing this charm asks of you. It fades if left alone."
         menu.addItem(ritualItem)
 
         menu.addItem(.separator())
@@ -341,7 +347,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Tend the charm: the fade resets, and it drops in to acknowledge it.
     @objc private func performRitual() {
-        preferences.recordRitual(forCharm: preferences.charm.glyph)
+        let charm = preferences.charm
+        if charm.ritual.isStaged {
+            let current = preferences.ritualStage(forCharm: charm.glyph)
+            preferences.setRitualStage(charm.ritual.stage(after: current), forCharm: charm.glyph)
+        }
+        preferences.recordRitual(forCharm: charm.glyph)
         refreshRitualState()
         refreshMenu()
         dropIn()
@@ -354,6 +365,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         charmView.charmOpacity = charm.ritual.opacity(
             lastPerformed: preferences.lastRitual(forCharm: charm.glyph)
         )
+        charmView.ritualStage = preferences.ritualStage(forCharm: charm.glyph)
     }
 
     // MARK: - tassel:// URLs

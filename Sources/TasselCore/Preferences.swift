@@ -18,6 +18,7 @@ public final class Preferences {
         static let catchesPointer = "catchesPointer"
         static let showsOrnaments = "showsOrnaments"
         static let ritualDates = "ritualDates"
+        static let ritualStages = "ritualStages"
         static let placementKind = "placementKind"
         static let placementX = "placementX"
     }
@@ -49,6 +50,19 @@ public final class Preferences {
         var stored = defaults.dictionary(forKey: Key.ritualDates) as? [String: Double] ?? [:]
         stored[glyph] = date.timeIntervalSince1970
         defaults.set(stored, forKey: Key.ritualDates)
+    }
+
+    /// How far a staged ritual has got, per charm. 0 for a charm never tended,
+    /// which for a daruma means blank — the way one is bought.
+    public func ritualStage(forCharm glyph: String) -> Int {
+        let stored = defaults.dictionary(forKey: Key.ritualStages) as? [String: Int]
+        return max(0, stored?[glyph] ?? 0)
+    }
+
+    public func setRitualStage(_ stage: Int, forCharm glyph: String) {
+        var stored = defaults.dictionary(forKey: Key.ritualStages) as? [String: Int] ?? [:]
+        stored[glyph] = max(0, stage)
+        defaults.set(stored, forKey: Key.ritualStages)
     }
 
     /// Where the charm hangs. Stored as a kind plus two fractions rather than a

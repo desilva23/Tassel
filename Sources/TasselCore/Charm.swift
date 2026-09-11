@@ -78,12 +78,17 @@ public struct Charm: Equatable, Identifiable, Sendable {
             glyph: "\u{1F344}", name: "Mushroom",
             ritual: Ritual(name: "Find Another", days: 14)
         ),
-        // Drawn by hand rather than borrowed from the emoji font, because a
-        // daruma is not in it. Both eyes are painted, which by the tradition
-        // means a wish already granted.
+        // Drawn by hand, because a daruma is not in the emoji font. Bought
+        // blank; one eye is painted when a wish is made, the other when it
+        // comes true, and then it is retired and a new one begun. The one-eyed
+        // stage is made from the other two, so the three always line up.
         Charm(
             glyph: "\u{1F3EE}", name: "Daruma",
-            ritual: Ritual(name: "Paint an Eye", days: 30),
+            ritual: Ritual(name: "Paint an Eye", stages: [
+                RitualStage(action: "Make a Wish", artwork: "daruma-blank"),
+                RitualStage(action: "My Wish Came True", artwork: "daruma-one-eye"),
+                RitualStage(action: "Start a New Wish", artwork: "daruma"),
+            ]),
             artwork: "daruma"
         ),
         // A lemon under a row of chillies, hung over a doorway to turn away bad
@@ -95,6 +100,12 @@ public struct Charm: Equatable, Identifiable, Sendable {
             threading: Ornament.nimbuMirchi
         ),
     ]
+
+    /// The artwork to show at a given ritual stage. A staged ritual supplies
+    /// its own; otherwise it is the charm's usual artwork.
+    public func artwork(atStage stage: Int) -> String? {
+        ritual.stage(at: stage)?.artwork ?? artwork
+    }
 
     /// Look one up by name, for `tassel://charm?name=...`.
     public static func named(_ name: String) -> Charm? {

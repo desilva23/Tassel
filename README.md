@@ -105,7 +105,13 @@ repainted. So every charm here carries the upkeep its own object asks for —
 **Ring It**, **Wipe It Clear**, **Turn Back the Eye**, **Hang a Fresh One** —
 and the top item in the menu is whatever that charm needs.
 
-Left alone, a charm fades. It never fades to nothing: a charm nobody has touched
+Some objects are not maintained but *progressed*, and for those the ritual
+advances through stages instead. The daruma is bought blank; **Make a Wish**
+paints one eye, **My Wish Came True** paints the other, and **Start a New Wish**
+retires it for a fresh blank one. It never fades — a daruma left one-eyed for
+months is a wish still pending, not a neglected charm.
+
+Left alone, any other charm fades. It never fades to nothing: a charm nobody has touched
 in a year should look neglected, not disappear. Performing the ritual restores
 it, and the menu says *due* once it is more than half gone. The dates are kept
 per charm, so tending one does not quietly refresh every other one you might
@@ -339,8 +345,6 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
 - The charms that need drawing are still undrawn: a maneki neko, a daruma, a
   vegvisir, a pysanka. The loading works and the template is in
   `Resources/Charms` — see [ASSETS.md](ASSETS.md) — but nobody has drawn them.
-- Rituals only fade. Several of these objects want a ritual with *stages* — a
-  daruma has one eye, then two — which the current model has no room for.
 - The grab area is a circle around the charm, not its actual glyph shape, so a
   click just outside a thin charm still passes through to whatever is behind it.
 - The rope always hangs from the very top of the screen, so it crosses the menu

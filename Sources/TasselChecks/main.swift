@@ -641,6 +641,12 @@ Expect.suite("a neglected charm never disappears") {
     let forgotten = now.addingTimeInterval(-3650 * 86_400)
     for charm in Charm.builtIn {
         let opacity = charm.ritual.opacity(lastPerformed: forgotten, now: now)
+        if charm.ritual.isStaged {
+            // Staged rituals wait instead: a daruma left one-eyed for a year is
+            // a wish still pending, not a neglected charm.
+            Expect.near(opacity, 1, 1e-9, "\(charm.name) faded, but a staged ritual should wait, not fade")
+            continue
+        }
         Expect.that(opacity > 0.08, "\(charm.name) faded to \(opacity) — it should look neglected, not vanish")
         Expect.that(opacity < 1, "\(charm.name) does not fade at all when neglected")
     }
@@ -669,7 +675,7 @@ Expect.suite("every charm has its own ritual") {
     let names = Set(Charm.builtIn.map(\.ritual.name))
     Expect.that(names.count == Charm.builtIn.count, "two charms share a ritual name")
     for charm in Charm.builtIn {
-        Expect.that(charm.ritual.period > 0, "\(charm.name) has no ritual period")
+        Expect.that(charm.ritual.isStaged || charm.ritual.period > 0, "\(charm.name) has no ritual period")
         Expect.that(charm.ritual.name != Ritual.generic.name, "\(charm.name) was left on the generic ritual")
     }
 }
@@ -756,8 +762,9 @@ Expect.suite("the artwork anchor is where the template says") {
 Expect.suite("every charm survives its artwork going missing") {
     for charm in Charm.builtIn {
         Expect.that(!charm.glyph.isEmpty, "\(charm.name) has no glyph to fall back on")
-        if let artwork = charm.artwork {
-            Expect.that(Artwork.isValidName(artwork), "\(charm.name) has an unusable artwork name")
+        let names = [charm.artwork].compactMap { $0 } + charm.ritual.stages.map(\.artwork)
+        for artwork in names {
+            Expect.that(Artwork.isValidName(artwork), "\(charm.name) has an unusable artwork name \(artwork)")
         }
     }
 }
@@ -804,6 +811,69 @@ Expect.suite("empty artwork does not explode") {
     let rect = Artwork.drawRect(content: .zero, aspect: 0, charmSize: 40, hanging: true)
     Expect.that(rect.width.isFinite && rect.height.isFinite, "an empty image produced a non-finite rect")
     Expect.that(rect.height > 0, "an empty image produced no height")
+}
+
+// Every artwork a charm names must actually be in the repository. A typo in a
+// name would otherwise only show up as a charm quietly falling back to its
+// glyph, which is easy to miss.
+Expect.suite("every named artwork file exists") {
+    let folder = FileManager.default.currentDirectoryPath + "/" + Artwork.folder
+    for charm in Charm.builtIn {
+        let names = [charm.artwork].compactMap { $0 } + charm.ritual.stages.map(\.artwork)
+        for name in names {
+            let path = "\(folder)/\(name).png"
+            Expect.that(FileManager.default.fileExists(atPath: path), "\(charm.name) names \(name).png, which is not there")
+        }
+    }
+}
+
+// A staged ritual moves forward one stage at a time and begins again after the
+// last, rather than stopping or skipping.
+Expect.suite("a staged ritual advances and starts over") {
+    let ritual = Ritual(name: "Test", stages: [
+        RitualStage(action: "A", artwork: "a"),
+        RitualStage(action: "B", artwork: "b"),
+        RitualStage(action: "C", artwork: "c"),
+    ])
+    Expect.that(ritual.isStaged, "a ritual with stages should say so")
+    Expect.that(ritual.stage(after: 0) == 1 && ritual.stage(after: 1) == 2, "stages should advance one at a time")
+    Expect.that(ritual.stage(after: 2) == 0, "after the last stage it should begin again")
+
+    // A stored stage can outlive a change to the number of stages.
+    Expect.that(ritual.stage(at: 7)?.action == "B", "an out-of-range stage should wrap, not trap")
+    Expect.that(ritual.stage(at: -1)?.action == "C", "a negative stage should wrap, not trap")
+
+    Expect.that(!ritual.isDue(lastPerformed: Date.distantPast), "a staged ritual is never overdue")
+    Expect.that(Ritual(name: "x", days: 3).stage(at: 0) == nil, "an ordinary ritual has no stages")
+}
+
+// The daruma goes blank, then one eye, then both — in that order, because that
+// is the order the custom has.
+Expect.suite("the daruma is painted in order") {
+    guard let daruma = Charm.named("Daruma") else {
+        Expect.that(false, "the daruma is missing from the charms")
+        return
+    }
+    Expect.that(daruma.ritual.isStaged, "the daruma's ritual should advance, not fade")
+    Expect.that(daruma.artwork(atStage: 0) == "daruma-blank", "a new daruma should be blank")
+    Expect.that(daruma.artwork(atStage: 1) == "daruma-one-eye", "a wish made should open one eye")
+    Expect.that(daruma.artwork(atStage: 2) == "daruma", "a wish granted should open both")
+    Expect.that(daruma.artwork(atStage: daruma.ritual.stage(after: 2)) == "daruma-blank",
+                "a granted daruma should give way to a new blank one")
+}
+
+// Where a staged ritual has got is remembered per charm.
+Expect.suite("ritual stages persist per charm") {
+    let defaults = UserDefaults(suiteName: "tassel.checks.\(UUID().uuidString)")!
+    let preferences = Preferences(defaults: defaults)
+    Expect.that(preferences.ritualStage(forCharm: "a") == 0, "a charm never tended should be at the first stage")
+
+    preferences.setRitualStage(2, forCharm: "a")
+    Expect.that(preferences.ritualStage(forCharm: "a") == 2, "a stage should round-trip")
+    Expect.that(preferences.ritualStage(forCharm: "b") == 0, "tending one charm should not move another")
+
+    preferences.setRitualStage(-5, forCharm: "a")
+    Expect.that(preferences.ritualStage(forCharm: "a") == 0, "a negative stage should not be stored")
 }
 
 Expect.report()

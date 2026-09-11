@@ -11,6 +11,8 @@ someone else's artwork, this is the document that answers it.
 | Cord | Drawn at runtime with `NSBezierPath` in `CharmView.draw(_:)` | Original |
 | App icon | Not yet made | — |
 | `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | Original |
+| `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | Original |
+| `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | Original |
 | `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | Original |
 
 ## Drawing a charm

@@ -20,6 +20,8 @@ final class CharmView: NSView {
     }
 
     var charm: Charm = .fallback { didSet { invalidateRope() } }
+    /// Which stage of a staged ritual to draw, for a charm that has one.
+    var ritualStage = 0 { didSet { invalidateRope() } }
     var charmSize: Double = 44 { didSet { invalidateRope() } }
     var showsOrnaments = true { didSet { invalidateRope() } }
     /// How solid the charm looks. Falls as its ritual goes untended, so a
@@ -541,7 +543,10 @@ final class CharmView: NSView {
     ///   through and which therefore sits centred on it. Getting this wrong
     ///   makes a threaded charm droop into whatever bead is below it.
     private func drawCharmBody(size: Double, at point: CGPoint, angle: Double, hanging: Bool) {
-        if let name = charm.artwork, let artwork = ArtworkStore.artwork(named: name) {
+        // The stage's artwork first, then the charm's own, then its glyph: a
+        // missing file should cost the charm its look, never its presence.
+        let names = [charm.artwork(atStage: ritualStage), charm.artwork].compactMap { $0 }
+        if let artwork = names.lazy.compactMap(ArtworkStore.artwork(named:)).first {
             drawArtwork(artwork, size: size, at: point, angle: angle, hanging: hanging)
         } else {
             drawGlyph(charm.glyph, size: size, at: point, angle: angle)
