@@ -13,6 +13,7 @@ someone else's artwork, this is the document that answers it.
 | `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | Original |
+| `Resources/Charms/lucky-coin.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | Original |
 
 ## Drawing a charm
@@ -51,7 +52,15 @@ swift Tools/unbackground.swift flattened.png Resources/Charms/name.png
 ```
 
 It floods inward from the edges rather than deleting every white pixel, so white
-that is enclosed by the drawing — a face, an eye — survives. Edges that were
+that is enclosed by the drawing — a face, an eye — survives. White that is
+enclosed but should be *see-through*, like a coin's square hole, has to be named:
+add a point inside it as fractions across and down the image.
+
+```bash
+swift Tools/unbackground.swift coin.png Resources/Charms/lucky-coin.png 0.5,0.52 0.5,0.041
+```
+
+That clears the coin's hole and the inside of its red loop. Edges that were
 antialiased against white are faded out to avoid a pale halo. It is a rescue,
 not a substitute: a proper transparent export is always cleaner.
 

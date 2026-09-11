@@ -42,9 +42,12 @@ public struct Charm: Equatable, Identifiable, Sendable {
             glyph: "\u{1F340}", name: "Four-Leaf Clover",
             ritual: Ritual(name: "Press a New One", days: 14)
         ),
+        // Drawn by hand: a Chinese cash coin, round with a square hole, hung by
+        // the red thread its ritual is about.
         Charm(
             glyph: "\u{1FA99}", name: "Lucky Coin",
-            ritual: Ritual(name: "Re-tie the Red Thread", days: 21)
+            ritual: Ritual(name: "Re-tie the Red Thread", days: 21),
+            artwork: "lucky-coin"
         ),
         Charm(
             glyph: "\u{1F514}", name: "Bell",

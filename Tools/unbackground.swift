@@ -2,10 +2,18 @@ import AppKit
 
 // Remove a flat white background from a flattened export.
 //
+//   swift Tools/unbackground.swift in.png out.png [x,y ...]
+//
 // Not "delete every white pixel" — the daruma's face is white too, and that
 // would leave a hole. Instead the background is found by flooding inward from
 // the edges: only white that is *connected to the border* is background. White
-// enclosed by the red body is unreachable and survives.
+// enclosed by the drawing is unreachable and survives.
+//
+// Which is right for a face and wrong for a hole. A coin's square hole is white
+// enclosed by bronze, and has to be cleared so the wallpaper shows through it.
+// So any `x,y` given after the file names — fractions across and down from the
+// top-left, `0.5,0.52` for the middle of a coin — seeds a flood there too. The
+// tool cannot tell a face from a hole on its own; that has to be said.
 
 let inputPath = CommandLine.arguments[1]
 let outputPath = CommandLine.arguments[2]
@@ -57,6 +65,23 @@ for y in 0..<h {
         let index = y * w + x
         if !isBackground[index] { isBackground[index] = true; queue.append(index) }
     }
+}
+
+// Enclosed areas to clear as well, named on the command line.
+for argument in CommandLine.arguments.dropFirst(3) {
+    let parts = argument.split(separator: ",").compactMap { Double($0) }
+    guard parts.count == 2 else {
+        FileHandle.standardError.write(Data("ignoring \(argument): expected x,y as fractions\n".utf8))
+        continue
+    }
+    let x = min(w - 1, max(0, Int(parts[0] * Double(w))))
+    let y = min(h - 1, max(0, Int(parts[1] * Double(h))))
+    let index = y * w + x
+    guard whiteness(offset(x, y)) > 0 else {
+        FileHandle.standardError.write(Data("ignoring \(argument): not white there\n".utf8))
+        continue
+    }
+    if !isBackground[index] { isBackground[index] = true; queue.append(index) }
 }
 
 var head = 0
