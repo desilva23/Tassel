@@ -42,8 +42,10 @@ public struct Charm: Equatable, Identifiable, Sendable {
             glyph: "\u{1F340}", name: "Four-Leaf Clover",
             ritual: Ritual(name: "Press a New One", days: 14)
         ),
-        // Drawn by hand: a Chinese cash coin, round with a square hole, hung by
-        // the red thread its ritual is about.
+        // Drawn by hand: a Yongzheng Tongbao (1723-1735), round with a square
+        // hole, hung by the red thread its ritual is about. Read top, bottom,
+        // right, left — 雍正通寶 — so 通 is on the right and 寶 on the left.
+        // Feng shui replicas often have those two swapped; this one does not.
         Charm(
             glyph: "\u{1FA99}", name: "Lucky Coin",
             ritual: Ritual(name: "Re-tie the Red Thread", days: 21),
