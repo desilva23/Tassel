@@ -15,6 +15,7 @@ someone else's artwork, this is the document that answers it.
 | `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | Original |
 | `Resources/Charms/yansheng.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | Original |
+| `Resources/Templates/maneki-neko-outline-*.png` | Drawn from scratch by `Tools/maneki-neko-outline.swift`, from the traditional figure alone, as a base to colour under | Original |
 
 ## Drawing a charm
 
@@ -100,6 +101,18 @@ The glyph stays required on purpose. A drawn charm is shown as its drawing
 everywhere, menus and menu bar included, but the glyph is what gets drawn if the
 artwork file is ever renamed or lost — a charm should never fail to appear
 because of a missing file.
+
+## Outlines to colour
+
+`Resources/Templates` holds line art to colour underneath: keep the outline as
+the top layer, paint on a layer below it, and export both together. The inside
+of every shape is left transparent, so colour shows through. These are never
+bundled into the app — only `Resources/Charms` is.
+
+The maneki-neko outline was drawn from scratch, in code, from the traditional
+figure — seated, a paw raised, collar and bell, a koban reading 千万両. It was
+made instead of tracing another app's rendering of one, and the script is kept
+as the record of that.
 
 ## Rules for adding assets
 
