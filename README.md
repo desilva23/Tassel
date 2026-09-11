@@ -79,8 +79,9 @@ Right-click the charm — or Control-click it — and its ritual is offered righ
 there: **Make a Wish** on a blank daruma, **Ring It** on the bell. No trip to
 the menu bar.
 
-Put the pointer on the charm and a faint ring appears: that is the one spot on
-the screen where the app is listening. Click it for a swing.
+The charm and its rope are the only places on the screen where the app is
+listening — everywhere else, clicks go straight through. Click the charm for a
+swing.
 
 **What you take hold of decides what the drag does.** Grab the *rope* and drag,
 and the whole thing moves to another column. Grab the *charm* and drag, and the
