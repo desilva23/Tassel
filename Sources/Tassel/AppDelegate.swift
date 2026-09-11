@@ -59,8 +59,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setUpStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.title = preferences.charm.glyph
         statusItem.button?.toolTip = "Tassel"
+        refreshStatusItem()
         statusItem.menu = buildMenu()
     }
 
@@ -157,6 +157,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return item
     }
 
+    /// The menu bar shows the charm as it actually looks — its drawing, at its
+    /// current stage — rather than its stand-in glyph.
+    private func refreshStatusItem() {
+        guard let button = statusItem?.button else { return }
+        let charm = preferences.charm
+        button.image = CharmIcon.image(for: charm, stage: preferences.ritualStage(forCharm: charm.glyph))
+        button.imagePosition = .imageOnly
+        button.title = ""
+    }
+
     /// What right-clicking the charm offers: its name, and its ritual.
     private func charmContextMenu() -> NSMenu {
         let menu = NSMenu()
@@ -169,9 +179,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let submenu = NSMenu()
         for charm in Charm.builtIn {
             let item = NSMenuItem(
-                title: "\(charm.glyph)  \(charm.name)",
+                title: charm.name,
                 action: #selector(selectCharm(_:)),
                 keyEquivalent: ""
+            )
+            item.image = CharmIcon.image(
+                for: charm,
+                stage: preferences.ritualStage(forCharm: charm.glyph)
             )
             item.target = self
             item.representedObject = charm.glyph
@@ -383,6 +397,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             lastPerformed: preferences.lastRitual(forCharm: charm.glyph)
         )
         charmView.ritualStage = preferences.ritualStage(forCharm: charm.glyph)
+        refreshStatusItem()
     }
 
     // MARK: - tassel:// URLs
@@ -548,7 +563,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let charm = Charm.builtIn.first { $0.glyph == glyph } ?? Charm(glyph: glyph, name: "Custom")
         preferences.charm = charm
         charmView.charm = charm
-        statusItem.button?.title = charm.glyph
+        refreshStatusItem()
         refreshRitualState()
         refreshMenu()
         dropIn()

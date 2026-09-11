@@ -89,16 +89,17 @@ Then drop the file in `Resources/Charms/` and add the charm in
 
 ```swift
 Charm(
-    glyph: "\u{1F431}",                       // stand-in for menus
+    glyph: "\u{1F431}",                       // drawn if the file is missing
     name: "Maneki Neko",
     ritual: Ritual(name: "Wind the Paw", days: 9),
     artwork: "maneki-neko"                     // the file, without .png
 )
 ```
 
-The glyph stays required on purpose. It is what shows in the menu and the menu
-bar, and it is what gets drawn if the artwork file is ever renamed or lost — a
-charm should never fail to appear because of a missing file.
+The glyph stays required on purpose. A drawn charm is shown as its drawing
+everywhere, menus and menu bar included, but the glyph is what gets drawn if the
+artwork file is ever renamed or lost — a charm should never fail to appear
+because of a missing file.
 
 ## Rules for adding assets
 
