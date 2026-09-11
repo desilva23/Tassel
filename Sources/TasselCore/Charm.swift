@@ -47,9 +47,9 @@ public struct Charm: Equatable, Identifiable, Sendable {
         // right, left — 雍正通寶 — so 通 is on the right and 寶 on the left.
         // Feng shui replicas often have those two swapped; this one does not.
         Charm(
-            glyph: "\u{1FA99}", name: "Lucky Coin",
+            glyph: "\u{1FA99}", name: "Yansheng",
             ritual: Ritual(name: "Re-tie the Red Thread", days: 21),
-            artwork: "lucky-coin"
+            artwork: "yansheng"
         ),
         Charm(
             glyph: "\u{1F514}", name: "Bell",
