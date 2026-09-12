@@ -39,6 +39,21 @@ Items awaiting your approval the first time.
 
 To quit, use **Quit Tassel** in the menu bar item. To remove it, `make uninstall`.
 
+### Giving it to someone
+
+```bash
+make dist
+```
+
+Makes `.build/Tassel-<version>.dmg`: the app, built to run on both Apple Silicon
+and Intel, beside a shortcut to Applications to drag it onto.
+
+The app is not signed with a Developer ID or notarized, so the first time it is
+opened macOS refuses and says it cannot check it. Click **Done**, then in
+**System Settings ▸ Privacy & Security** scroll down and click **Open Anyway**
+beside Tassel. That is needed once; after that it opens like anything else.
+Opening with no warning at all needs an Apple Developer Program membership.
+
 ## Working on it
 
 ```bash
