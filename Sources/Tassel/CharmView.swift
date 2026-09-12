@@ -313,6 +313,7 @@ final class CharmView: NSView {
         }
         let box = Artwork.contentBox(
             content: artwork.content,
+            hookX: artwork.hookX,
             aspect: artwork.aspect,
             charmSize: charmSize,
             hanging: true
@@ -604,10 +605,9 @@ final class CharmView: NSView {
         }
     }
 
-    /// Artwork hangs *from* the anchor marked on the drawing template, rather
-    /// than being centred on the rope's end the way a glyph is. That is what
-    /// lets a drawn charm have a loop or a knot at its top and have the rope
-    /// meet it exactly there.
+    /// Artwork hangs *from* the top of its drawing, rather than being centred
+    /// on the rope's end the way a glyph is. That is what lets a drawn charm
+    /// have a loop or a knot at its top and have the rope meet it exactly there.
     private func drawArtwork(
         _ artwork: ArtworkStore.Loaded,
         size: Double,
@@ -622,6 +622,7 @@ final class CharmView: NSView {
         artwork.image.draw(
             in: Artwork.drawRect(
                 content: artwork.content,
+                hookX: artwork.hookX,
                 aspect: artwork.aspect,
                 charmSize: size,
                 hanging: hanging

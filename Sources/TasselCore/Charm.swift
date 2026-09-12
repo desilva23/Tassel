@@ -96,6 +96,14 @@ public struct Charm: Equatable, Identifiable, Sendable {
             ]),
             artwork: "daruma"
         ),
+        // Drawn by hand. The beckoning cat raises its right paw, which invites
+        // money, and holds a koban reading 千万両 — ten million ryō. Its gold is
+        // kept bright by polishing, so that is what it asks for.
+        Charm(
+            glyph: "\u{1F431}", name: "Maneki Neko",
+            ritual: Ritual(name: "Polish the Koban", days: 9),
+            artwork: "maneki-neko"
+        ),
         // A lemon under a row of chillies, hung over a doorway to turn away bad
         // luck. It is taken down and replaced when it dries out, traditionally
         // on a Saturday — so a week is not an arbitrary number here.

@@ -1,5 +1,6 @@
 import CoreGraphics
 import Foundation
+import ImageIO
 import TasselCore
 
 /// Distance from `point` to the straight line through `a` and `b`. This is the
@@ -777,8 +778,8 @@ Expect.suite("artwork hangs by its drawing, not its canvas") {
     // The same charm drawn small in the middle of its page.
     let inset = CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
 
-    let a = Artwork.drawRect(content: full, aspect: 1, charmSize: 60, hanging: true)
-    let b = Artwork.drawRect(content: inset, aspect: 1, charmSize: 60, hanging: true)
+    let a = Artwork.drawRect(content: full, hookX: 0.5, aspect: 1, charmSize: 60, hanging: true)
+    let b = Artwork.drawRect(content: inset, hookX: 0.5, aspect: 1, charmSize: 60, hanging: true)
 
     // Both must put the top of the drawing exactly on the rope.
     Expect.near(a.maxY, 0, 1e-9, "a full-canvas drawing should start at the rope")
@@ -789,26 +790,57 @@ Expect.suite("artwork hangs by its drawing, not its canvas") {
     Expect.near(full.height * a.height, 60 * Artwork.scale, 1e-9, "the drawing should be scale times the charm size")
 }
 
-// Horizontally, the drawing is centred on the rope however it sat on the page.
-Expect.suite("artwork is centred on the rope") {
+// Horizontally, the rope meets the drawing at its hook however it sat on the
+// page — its middle when it is symmetric, off to one side when it is not.
+Expect.suite("artwork hangs on the rope by its hook") {
     let offCentre = CGRect(x: 0.1, y: 0.2, width: 0.4, height: 0.6)
-    let rect = Artwork.drawRect(content: offCentre, aspect: 1, charmSize: 50, hanging: true)
-    Expect.near(rect.origin.x + offCentre.midX * rect.width, 0, 1e-9, "the drawing should straddle the rope")
+    let centred = Artwork.drawRect(content: offCentre, hookX: offCentre.midX, aspect: 1, charmSize: 50, hanging: true)
+    Expect.near(centred.origin.x + offCentre.midX * centred.width, 0, 1e-9, "a drawing hooked in its middle should straddle the rope")
+
+    let lopsided = Artwork.drawRect(content: offCentre, hookX: 0.42, aspect: 1, charmSize: 50, hanging: true)
+    Expect.near(lopsided.origin.x + 0.42 * lopsided.width, 0, 1e-9, "the hook, not the middle, should be on the rope")
+}
+
+// A maneki-neko raises a paw out to one side, which pulls the middle of the
+// drawing well away from the loop it hangs by. The rope has to meet the loop,
+// or it ends in thin air beside it.
+Expect.suite("a drawing hangs by its loop, not by its middle") {
+    // 100 square, y down: a ring centred at x 70, a body under it, and a paw
+    // reaching out far to the left.
+    let measured = Artwork.measure(width: 100, height: 100, step: 1) { x, y in
+        let ring = hypot(Double(x - 70), Double(y - 8)) <= 6
+        let body = (40...95).contains(x) && (20...99).contains(y)
+        let paw = (0...40).contains(x) && (25...40).contains(y)
+        return ring || body || paw
+    }
+    Expect.near(measured.content.minX, 0, 1e-9, "the paw is part of the drawing")
+    Expect.near(measured.content.maxY, 0.98, 1e-9, "the top of the drawing is the top of the ring")
+    Expect.near(measured.hookX, 0.70, 0.01, "the drawing should hang from its ring, at 70")
+
+    // Whereas a symmetric one hangs from its middle, exactly as before.
+    let disc = Artwork.measure(width: 100, height: 100, step: 1) { x, y in
+        hypot(Double(x - 50), Double(y - 50)) <= 30
+    }
+    Expect.near(disc.hookX, disc.content.midX, 1e-9, "a symmetric drawing should hang from its middle")
+
+    let blank = Artwork.measure(width: 10, height: 10, step: 1) { _, _ in false }
+    Expect.that(blank.content == CGRect(x: 0, y: 0, width: 1, height: 1) && blank.hookX == 0.5,
+                "a blank image should fall back to the whole canvas")
 }
 
 // Threaded on rather than hung from: the rope passes through the middle.
 Expect.suite("a threaded charm sits centred on the rope") {
     let content = CGRect(x: 0.1, y: 0.1, width: 0.8, height: 0.8)
-    let rect = Artwork.drawRect(content: content, aspect: 1, charmSize: 40, hanging: false)
+    let rect = Artwork.drawRect(content: content, hookX: content.midX, aspect: 1, charmSize: 40, hanging: false)
     Expect.near(rect.origin.y + content.midY * rect.height, 0, 1e-9, "a threaded charm should be centred, not hung")
 
-    let hung = Artwork.drawRect(content: content, aspect: 1, charmSize: 40, hanging: true)
+    let hung = Artwork.drawRect(content: content, hookX: content.midX, aspect: 1, charmSize: 40, hanging: true)
     Expect.that(hung.origin.y < rect.origin.y, "a hanging charm should sit lower than a threaded one")
 }
 
 // A blank or broken image must not divide by zero.
 Expect.suite("empty artwork does not explode") {
-    let rect = Artwork.drawRect(content: .zero, aspect: 0, charmSize: 40, hanging: true)
+    let rect = Artwork.drawRect(content: .zero, hookX: 0, aspect: 0, charmSize: 40, hanging: true)
     Expect.that(rect.width.isFinite && rect.height.isFinite, "an empty image produced a non-finite rect")
     Expect.that(rect.height > 0, "an empty image produced no height")
 }
@@ -824,6 +856,47 @@ Expect.suite("every named artwork file exists") {
             let path = "\(folder)/\(name).png"
             Expect.that(FileManager.default.fileExists(atPath: path), "\(charm.name) names \(name).png, which is not there")
         }
+    }
+}
+
+// The drawings themselves, measured the way the app measures them: wherever
+// the rope ends up meeting one, there has to be something drawn there. A stray
+// speck above the loop, or a lopsided drawing hung from its middle, puts the
+// end of the rope in empty air instead.
+Expect.suite("the rope meets every drawn charm on its drawing") {
+    let folder = FileManager.default.currentDirectoryPath + "/" + Artwork.folder
+    let names = Set(Charm.builtIn.flatMap { [$0.artwork].compactMap { $0 } + $0.ritual.stages.map(\.artwork) })
+    for name in names.sorted() {
+        guard let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: "\(folder)/\(name).png") as CFURL, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+              let context = CGContext(
+                  data: nil, width: image.width, height: image.height, bitsPerComponent: 8,
+                  bytesPerRow: image.width * 4, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              )
+        else {
+            Expect.that(false, "\(name).png could not be read")
+            continue
+        }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        let width = image.width, height = image.height
+        let pixels = context.data!.bindMemory(to: UInt8.self, capacity: width * height * 4)
+        // Rows run top-down in memory; alpha is the fourth byte.
+        let isDrawn = { (x: Int, y: Int) in
+            x >= 0 && y >= 0 && x < width && y < height && pixels[(y * width + x) * 4 + 3] > 20
+        }
+        let step = min(width, height) / 200
+        let measured = Artwork.measure(width: width, height: height, step: step, isDrawn: isDrawn)
+
+        // Where the rope's end lands on the image, in pixels, y down.
+        let rect = Artwork.drawRect(content: measured.content, hookX: measured.hookX,
+                                    aspect: Double(width) / Double(height), charmSize: 60, hanging: true)
+        let ropeX = Int(-rect.minX / rect.width * Double(width))
+        let ropeY = Int((1 - -rect.minY / rect.height) * Double(height))
+        let touches = (ropeY...(ropeY + 3 * step)).contains { y in
+            ((ropeX - 3)...(ropeX + 3)).contains { x in isDrawn(x, y) }
+        }
+        Expect.that(touches, "the rope meets \(name).png at \(ropeX),\(ropeY), where nothing is drawn")
     }
 }
 
@@ -896,7 +969,7 @@ Expect.suite("a charm continues the line of its rope") {
 // What can be clicked is the drawn charm, hanging below the rope's end.
 Expect.suite("a hanging charm's clickable area is where it is drawn") {
     let content = CGRect(x: 0.1, y: 0.05, width: 0.8, height: 0.86)
-    let box = Artwork.contentBox(content: content, aspect: 1, charmSize: 60, hanging: true)
+    let box = Artwork.contentBox(content: content, hookX: content.midX, aspect: 1, charmSize: 60, hanging: true)
     Expect.near(box.maxY, 0, 1e-9, "the top of the drawing should meet the rope's end")
     Expect.near(box.midX, 0, 1e-9, "the drawing should straddle the rope")
     Expect.near(box.height, 60 * Artwork.scale, 1e-9, "the box should be as tall as the drawing is drawn")

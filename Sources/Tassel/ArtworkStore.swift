@@ -13,6 +13,8 @@ enum ArtworkStore {
         let image: NSImage
         /// The opaque part, in unit coordinates of the image, y up.
         let content: CGRect
+        /// How far across the image the drawing hangs from: its loop.
+        let hookX: Double
         let aspect: Double
     }
 
@@ -24,9 +26,11 @@ enum ArtworkStore {
             return cached
         }
         let result = image(named: name).map { image in
-            Loaded(
+            let measured = measure(image)
+            return Loaded(
                 image: image,
-                content: contentBounds(of: image),
+                content: measured.content,
+                hookX: measured.hookX,
                 aspect: image.size.width / max(image.size.height, 1)
             )
         }
@@ -34,39 +38,18 @@ enum ArtworkStore {
         return result
     }
 
-    /// The box the drawing actually occupies, ignoring transparent margin.
-    ///
-    /// Sampled on a grid rather than every pixel: this runs once per charm and
-    /// a few thousand samples locate an edge closely enough for placement, where
-    /// a million would just be slower.
-    private static func contentBounds(of image: NSImage) -> CGRect {
+    /// Where the drawing is on its canvas and where it hangs from, ignoring
+    /// transparent margin. Sampled on a grid: this runs once per charm.
+    private static func measure(_ image: NSImage) -> (content: CGRect, hookX: Double) {
         guard let tiff = image.tiffRepresentation,
               let rep = NSBitmapImageRep(data: tiff)
-        else { return CGRect(x: 0, y: 0, width: 1, height: 1) }
+        else { return (CGRect(x: 0, y: 0, width: 1, height: 1), 0.5) }
 
         let width = rep.pixelsWide, height = rep.pixelsHigh
-        guard width > 0, height > 0 else { return CGRect(x: 0, y: 0, width: 1, height: 1) }
-        let step = max(1, min(width, height) / 200)
-
-        var minX = width, maxX = -1, minY = height, maxY = -1
-        for x in stride(from: 0, to: width, by: step) {
-            for y in stride(from: 0, to: height, by: step) {
-                // A low threshold, so a soft edge still counts as drawing.
-                guard let colour = rep.colorAt(x: x, y: y), colour.alphaComponent > 0.08 else { continue }
-                minX = min(minX, x); maxX = max(maxX, x)
-                minY = min(minY, y); maxY = max(maxY, y)
-            }
+        return Artwork.measure(width: width, height: height, step: min(width, height) / 200) { x, y in
+            // A low threshold, so a soft edge still counts as drawing.
+            (rep.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0.08
         }
-        guard maxX >= minX, maxY >= minY else { return CGRect(x: 0, y: 0, width: 1, height: 1) }
-
-        // colorAt has y increasing downward; unit coordinates here are y up.
-        let w = Double(width), h = Double(height)
-        return CGRect(
-            x: Double(minX) / w,
-            y: 1 - Double(maxY + step) / h,
-            width: Double(maxX + step - minX) / w,
-            height: Double(maxY + step - minY) / h
-        )
     }
 
     static func image(named name: String) -> NSImage? {

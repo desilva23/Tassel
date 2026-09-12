@@ -278,7 +278,9 @@ finding the opaque part of the image and hanging the charm from the top of that.
 Anchoring to the canvas instead means every millimetre of empty margin somebody
 leaves above their drawing becomes a length of bare rope, and two charms drawn
 at different sizes on the page hang at different sizes on screen. Neither is
-something an illustrator should have to think about.
+something an illustrator should have to think about. Across, the rope meets the
+middle of the drawing's topmost sliver — its loop — rather than the middle of the
+whole drawing, which a maneki neko's raised paw pulls well off to one side.
 
 **It reacts without ever watching you.** The pointer is polled from
 `NSEvent.mouseLocation` in the frame loop rather than watched with a global event
@@ -347,9 +349,9 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
   honoured from `UserDefaults` but nothing writes them yet.
 - The hotkey is hard-coded in `AppDelegate.setUpHotKey()`.
 - Placement is single-display: the charm always hangs on the menu bar screen.
-- The charms that need drawing are still undrawn: a maneki neko, a daruma, a
-  vegvisir, a pysanka. The loading works and the template is in
-  `Resources/Charms` — see [ASSETS.md](ASSETS.md) — but nobody has drawn them.
+- Two charms that need drawing are still undrawn: a vegvisir and a pysanka. The
+  maneki neko, the daruma and the Yansheng are drawn; see [ASSETS.md](ASSETS.md)
+  for how to add another.
 - The grab area is a circle around the charm, not its actual glyph shape, so a
   click just outside a thin charm still passes through to whatever is behind it.
 - The rope always hangs from the very top of the screen, so it crosses the menu

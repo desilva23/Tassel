@@ -14,6 +14,7 @@ someone else's artwork, this is the document that answers it.
 | `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | Original |
 | `Resources/Charms/yansheng.png` | Drawn by Desilva Stalin | Original |
+| `Resources/Charms/maneki-neko.png` | Coloured by Desilva Stalin over the outline below, then trimmed by `Tools/prepare-charm.swift` | Original |
 | `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | Original |
 | `Resources/Templates/maneki-neko-outline-*.png` | Drawn from scratch by `Tools/maneki-neko-outline.swift`, from the traditional figure alone, as a base to colour under | Original |
 
@@ -81,21 +82,37 @@ still comes out the same size as every other charm. The crosshair on the
 template is a guide, not a requirement.
 
 What does matter is that the top of the drawing is whatever the charm should
-hang by — its loop, its knot, the top of its head. Do not leave a stray mark
-above it: a single stroke floating near the top of the page is, as far as the
-app can tell, the top of the charm, and the rope will attach to that.
+hang by — its loop, its knot, the top of its head. The rope meets the middle of
+that, not the middle of the whole drawing, so a drawing that sticks out further
+on one side still hangs from its loop. Do not leave a stray mark above it: a
+single stroke floating near the top of the page is, as far as the app can tell,
+the top of the charm, and the rope will attach to that.
 
-Then drop the file in `Resources/Charms/` and add the charm in
-`Sources/TasselCore/Charm.swift`:
+**Run the export through `Tools/prepare-charm.swift`.** It clears stray marks,
+including ones too faint to see, trims the empty page and fits the drawing onto
+the 1024 canvas the other charms use:
+
+```bash
+swift Tools/prepare-charm.swift ~/Downloads/drawing.png Resources/Charms/name.png
+```
+
+It lists every piece it removes. A piece is removed for being tiny across, not
+for being small, so a ring drawn floating inside another ring survives — but read
+the list anyway.
+
+Then add the charm in `Sources/TasselCore/Charm.swift`:
 
 ```swift
 Charm(
     glyph: "\u{1F431}",                       // drawn if the file is missing
     name: "Maneki Neko",
-    ritual: Ritual(name: "Wind the Paw", days: 9),
+    ritual: Ritual(name: "Polish the Koban", days: 9),
     artwork: "maneki-neko"                     // the file, without .png
 )
 ```
+
+`make check` then confirms the file is there and that the rope meets the drawing
+on something drawn.
 
 The glyph stays required on purpose. A drawn charm is shown as its drawing
 everywhere, menus and menu bar included, but the glyph is what gets drawn if the
