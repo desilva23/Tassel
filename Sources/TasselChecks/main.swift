@@ -899,8 +899,8 @@ Expect.suite("the rope meets every drawn charm on its drawing") {
         // Where the rope's end lands on the image, in pixels, y down.
         let rect = Artwork.drawRect(content: measured.content, hookX: measured.hookX,
                                     aspect: Double(width) / Double(height), charmSize: 60, hanging: true)
-        let ropeX = Int(-rect.minX / rect.width * Double(width))
-        let ropeY = Int((1 - -rect.minY / rect.height) * Double(height))
+        let ropeX = Int(Double(-rect.minX / rect.width) * Double(width))
+        let ropeY = Int((1 - Double(-rect.minY / rect.height)) * Double(height))
         let touches = (ropeY...(ropeY + 3 * step)).contains { y in
             ((ropeX - 3)...(ropeX + 3)).contains { x in isDrawn(x, y) }
         }
