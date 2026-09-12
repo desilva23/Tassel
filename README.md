@@ -361,7 +361,7 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
 
 ## Not done yet
 
-- No app icon, and no preferences window — cord length and charm size are
+- No preferences window — cord length and charm size are
   honoured from `UserDefaults` but nothing writes them yet.
 - The hotkey is hard-coded in `AppDelegate.setUpHotKey()`.
 - Placement is single-display: the charm always hangs on the menu bar screen.
