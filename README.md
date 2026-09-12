@@ -54,6 +54,24 @@ opened macOS refuses and says it cannot check it. Click **Done**, then in
 beside Tassel. That is needed once; after that it opens like anything else.
 Opening with no warning at all needs an Apple Developer Program membership.
 
+It is also published through a Homebrew tap, which installs it with no warning:
+
+```bash
+brew install desilva23/tap/tassel
+```
+
+To publish a new version there, from a clean `main`:
+
+```bash
+make release VERSION=0.1.2 NOTES="What changed."
+```
+
+That runs the checks, bumps the version, builds the disk image, releases it on
+[desilva23/homebrew-tap](https://github.com/desilva23/homebrew-tap), points the
+cask at it and confirms the public download matches the build. It expects the tap
+checked out beside this repository, at `../homebrew-tap`. Anyone who has it
+already picks the new version up with `brew upgrade tassel`.
+
 ## Working on it
 
 ```bash
