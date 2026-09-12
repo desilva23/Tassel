@@ -14,6 +14,7 @@ someone else's artwork, this is the document that answers it.
 | `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | Original |
 | `Resources/Charms/yansheng.png` | Drawn by Desilva Stalin | Original |
+| `Resources/Charms/pysanka.png` | Drawn by Desilva Stalin, trimmed by `Tools/prepare-charm.swift` | Original |
 | `Resources/Charms/maneki-neko.png` | Coloured by Desilva Stalin over the outline below, then trimmed by `Tools/prepare-charm.swift` | Original |
 | `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | Original |
 | `Resources/Templates/maneki-neko-outline-*.png` | Drawn from scratch by `Tools/maneki-neko-outline.swift`, from the traditional figure alone, as a base to colour under | Original |

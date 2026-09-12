@@ -104,6 +104,15 @@ public struct Charm: Equatable, Identifiable, Sendable {
             ritual: Ritual(name: "Polish the Koban", days: 9),
             artwork: "maneki-neko"
         ),
+        // Drawn by hand: a Ukrainian decorated egg, with the wheat, birds,
+        // stars and flowers pysanky are covered in. A pysanka is "written"
+        // (pysaty, to write), kept in the home the year round and a new one
+        // written each Easter — so its ritual comes round once a year.
+        Charm(
+            glyph: "\u{1F95A}", name: "Pysanka",
+            ritual: Ritual(name: "Write a New One", days: 365),
+            artwork: "pysanka"
+        ),
         // A lemon under a row of chillies, hung over a doorway to turn away bad
         // luck. It is taken down and replaced when it dries out, traditionally
         // on a Saturday — so a week is not an arbitrary number here.

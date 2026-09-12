@@ -349,8 +349,8 @@ files into `Tests/TasselCoreTests` and add a `.testTarget` back to
   honoured from `UserDefaults` but nothing writes them yet.
 - The hotkey is hard-coded in `AppDelegate.setUpHotKey()`.
 - Placement is single-display: the charm always hangs on the menu bar screen.
-- Two charms that need drawing are still undrawn: a vegvisir and a pysanka. The
-  maneki neko, the daruma and the Yansheng are drawn; see [ASSETS.md](ASSETS.md)
+- One charm that needs drawing is still undrawn: a vegvisir. The maneki neko,
+  the pysanka, the daruma and the Yansheng are drawn; see [ASSETS.md](ASSETS.md)
   for how to add another.
 - The grab area is a circle around the charm, not its actual glyph shape, so a
   click just outside a thin charm still passes through to whatever is behind it.
