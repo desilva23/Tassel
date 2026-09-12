@@ -146,11 +146,11 @@ unrecognised is ignored rather than guessed at.
 Threading is per charm. Most of them get two beads and a smaller copy of the
 charm, which is how these things are actually strung. The beads are coloured
 against the charm rather than to match it — gold on the red daruma, red on the
-white maneki neko, sunflower on the blue pysanka — so they read as beads, not as
-bits of the charm. The nazar keeps plain bone. **Nimbu Mirchi** — a lemon
-under a row of chillies, hung over a doorway to turn away bad luck — gets the
-chillies instead, lying across the string and pointing left and right by turns.
-**Beads on the Rope** turns the threading off.
+white maneki neko, the red of its thread on the bronze Yansheng — so they read as
+beads, not as bits of the charm. The nazar, the bell and the pysanka keep plain
+bone. **Nimbu Mirchi** — a lemon under a row of chillies, hung over a doorway to
+turn away bad luck — gets the chillies instead, lying across the string and
+pointing left and right by turns. **Beads on the Rope** turns the threading off.
 
 Each piece is placed a set number of charm-widths above the charm, not at a fixed
 fraction of the rope. A fraction that clears a small charm puts a bead squarely

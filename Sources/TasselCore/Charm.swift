@@ -65,8 +65,8 @@ public struct Charm: Equatable, Identifiable, Sendable {
         ),
         Charm(
             glyph: "\u{1F514}", name: "Bell",
-            ritual: Ritual(name: "Ring It", days: 3),
-            beadColor: RGB(0x3E6FD1)   // blue, against gold
+            ritual: Ritual(name: "Ring It", days: 3)
+            // Bone beads, by choice.
         ),
         Charm(
             glyph: "\u{1F52E}", name: "Crystal Ball",
@@ -133,8 +133,8 @@ public struct Charm: Equatable, Identifiable, Sendable {
         Charm(
             glyph: "\u{1F95A}", name: "Pysanka",
             ritual: Ritual(name: "Write a New One", days: 365),
-            artwork: "pysanka",
-            beadColor: RGB(0xF5C21B)   // sunflower, against a blue egg
+            artwork: "pysanka"
+            // Bone beads, by choice: the egg is colourful enough on its own.
         ),
         // A lemon under a row of chillies, hung over a doorway to turn away bad
         // luck. It is taken down and replaced when it dries out, traditionally
