@@ -1,6 +1,21 @@
 import CoreGraphics
 import Foundation
 
+/// A colour in sRGB, each component 0 to 1. Plain numbers rather than an
+/// `NSColor`, so charms can say what colour their beads are without AppKit.
+public struct RGB: Equatable, Sendable {
+    public let red: Double
+    public let green: Double
+    public let blue: Double
+
+    /// From a hex literal, the way colours are usually written: `RGB(0xC8202F)`.
+    public init(_ hex: UInt32) {
+        red = Double((hex >> 16) & 0xFF) / 255
+        green = Double((hex >> 8) & 0xFF) / 255
+        blue = Double(hex & 0xFF) / 255
+    }
+}
+
 /// Something threaded on the rope above the charm.
 ///
 /// A charm on a cord is rarely just a charm on a cord — the real objects carry

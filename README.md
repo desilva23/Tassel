@@ -144,7 +144,10 @@ unrecognised is ignored rather than guessed at.
 ### What is on the rope
 
 Threading is per charm. Most of them get two beads and a smaller copy of the
-charm, which is how these things are actually strung. **Nimbu Mirchi** — a lemon
+charm, which is how these things are actually strung. The beads are coloured
+against the charm rather than to match it — gold on the red daruma, red on the
+white maneki neko, amber on the blue nazar — so they read as beads, not as bits of
+the charm. **Nimbu Mirchi** — a lemon
 under a row of chillies, hung over a doorway to turn away bad luck — gets the
 chillies instead, lying across the string and pointing left and right by turns.
 **Beads on the Rope** turns the threading off.

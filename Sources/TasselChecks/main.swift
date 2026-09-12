@@ -770,6 +770,18 @@ Expect.suite("every charm survives its artwork going missing") {
     }
 }
 
+// Beads are coloured against their charm, not left one bone colour for all.
+// A new charm strung with beads should get a colour picked for it too.
+Expect.suite("every beaded charm has beads of its own colour") {
+    for charm in Charm.builtIn where charm.threading.contains(where: { $0.shape == .bead }) {
+        Expect.that(charm.beadColor != nil, "\(charm.name) is strung with beads but names no bead colour")
+    }
+    let hex = RGB(0xFF8000)
+    Expect.near(hex.red, 1, 1e-9, "a hex colour's red should read from the top byte")
+    Expect.near(hex.green, 128.0 / 255, 1e-9, "a hex colour's green should read from the middle byte")
+    Expect.near(hex.blue, 0, 1e-9, "a hex colour's blue should read from the bottom byte")
+}
+
 // Artwork is placed by where the drawing actually is, not by the canvas it was
 // drawn on, so a charm that left a margin does not hang from a length of bare
 // rope where that margin is.

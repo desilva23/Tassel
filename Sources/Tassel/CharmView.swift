@@ -454,7 +454,7 @@ final class CharmView: NSView {
             : NSColor(srgbRed: 0.40, green: 0.28, blue: 0.11, alpha: 0.90)
     }
 
-    /// Bone, in both themes.
+    /// Bone, for beads on a charm that names no colour of its own.
     private static let beadColor = NSColor(name: nil) { appearance in
         appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
             ? NSColor(srgbRed: 0.94, green: 0.92, blue: 0.86, alpha: 1)
@@ -526,7 +526,10 @@ final class CharmView: NSView {
                     x: point.x - radius, y: point.y - radius,
                     width: radius * 2, height: radius * 2
                 )
-                Self.beadColor.setFill()
+                let fill = charm.beadColor.map {
+                    NSColor(srgbRed: $0.red, green: $0.green, blue: $0.blue, alpha: 1)
+                } ?? Self.beadColor
+                fill.setFill()
                 NSBezierPath(ovalIn: box).fill()
 
                 let rim = NSBezierPath(ovalIn: box.insetBy(dx: 0.4, dy: 0.4))
