@@ -12,7 +12,7 @@ BUNDLE      := .build/$(APP_NAME).app
 VERSION     := $(shell /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Resources/Info.plist)
 DMG         := .build/$(APP_NAME)-$(VERSION).dmg
 
-.PHONY: all build app run install uninstall dist icon check clean
+.PHONY: all build app run install uninstall dist release icon check clean
 
 all: app
 
@@ -84,6 +84,11 @@ dist: app
 	hdiutil create -quiet -volname "$(APP_NAME)" -srcfolder .build/dmg -ov -format UDZO "$(DMG)"
 	rm -rf .build/dmg
 	@echo "made $(DMG)"
+
+## Publish a new version through the Homebrew tap. See Tools/release.sh.
+##   make release VERSION=0.1.2 NOTES="What changed."
+release:
+	Tools/release.sh "$(VERSION)"
 
 ## Redraw Resources/AppIcon.icns from the maneki-neko drawing. The result is
 ## checked in, so this is only needed when the icon itself should change.
