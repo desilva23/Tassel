@@ -9,7 +9,10 @@ CONFIG      ?= debug
 BUILD_DIR   = .build/$(CONFIG)
 BUNDLE      := .build/$(APP_NAME).app
 
-.PHONY: all build app run install uninstall check clean
+VERSION     := $(shell /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Resources/Info.plist)
+DMG         := .build/$(APP_NAME)-$(VERSION).dmg
+
+.PHONY: all build app run install uninstall dist check clean
 
 all: app
 
@@ -58,6 +61,28 @@ install: app
 	cp -R "$(BUNDLE)" "/Applications/$(APP_NAME).app"
 	@echo "installed /Applications/$(APP_NAME).app"
 	open "/Applications/$(APP_NAME).app"
+
+## A disk image to give to someone else: the app beside a link to /Applications
+## to drag it onto. Universal, so it runs on Apple Silicon and Intel alike and
+## nobody has to know which they have. Still only ad-hoc signed: without a
+## Developer ID and notarization, the first open needs Open Anyway in
+## System Settings ▸ Privacy & Security.
+dist: CONFIG = release
+dist: app
+	swift build -c release --triple arm64-apple-macosx14.0 --product $(APP_NAME)
+	swift build -c release --triple x86_64-apple-macosx14.0 --product $(APP_NAME)
+	lipo -create \
+		.build/arm64-apple-macosx/release/$(APP_NAME) \
+		.build/x86_64-apple-macosx/release/$(APP_NAME) \
+		-output "$(BUNDLE)/Contents/MacOS/$(APP_NAME)"
+	codesign --force --sign - "$(BUNDLE)"
+	rm -rf .build/dmg "$(DMG)"
+	mkdir -p .build/dmg
+	cp -R "$(BUNDLE)" .build/dmg/
+	ln -s /Applications .build/dmg/Applications
+	hdiutil create -quiet -volname "$(APP_NAME)" -srcfolder .build/dmg -ov -format UDZO "$(DMG)"
+	rm -rf .build/dmg
+	@echo "made $(DMG)"
 
 uninstall:
 	@pkill -x $(APP_NAME) 2>/dev/null || true
