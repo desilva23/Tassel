@@ -104,10 +104,10 @@ better answer than a modifier, and needs no explaining.
 ### Rituals
 
 The real objects are not ornaments you hang and forget. A daruma waits with a
-blank eye until the wish it was bought for comes true. A nimbu mirchi dries out
-and is replaced, traditionally on a Saturday. A guardian weathers and is
+blank eye until the wish it was bought for comes true. A pysanka is kept the
+year round and a new one written each Easter. A guardian weathers and is
 repainted. So every charm here carries the upkeep its own object asks for —
-**Ring It**, **Wipe It Clear**, **Turn Back the Eye**, **Hang a Fresh One** —
+**Ring It**, **Turn Back the Eye**, **Polish the Koban**, **Re-tie the Red Thread** —
 and the top item in the menu is whatever that charm needs.
 
 Some objects are not maintained but *progressed*, and for those the ritual
@@ -132,7 +132,7 @@ integration, no API, no daemon.
 ```bash
 open "tassel://bless"              # before a deploy, a demo, a big meeting
 open "tassel://ritual"             # tend the charm
-open "tassel://charm?name=Dragon"  # switch charms
+open "tassel://charm?name=Daruma"  # switch charms
 open "tassel://show"               # and hide
 ```
 
@@ -143,14 +143,12 @@ unrecognised is ignored rather than guessed at.
 
 ### What is on the rope
 
-Threading is per charm. Most of them get two beads and a smaller copy of the
-charm, which is how these things are actually strung. The beads are coloured
-against the charm rather than to match it — gold on the red daruma, red on the
-white maneki neko, sunflower on the blue pysanka — so they read as beads, not as
-bits of the charm. The nazar keeps plain bone. **Nimbu Mirchi** — a lemon
-under a row of chillies, hung over a doorway to turn away bad luck — gets the
-chillies instead, lying across the string and pointing left and right by turns.
-**Beads on the Rope** turns the threading off.
+Threading is per charm. Each gets two beads and a smaller copy of the charm,
+which is how these things are actually strung. The beads are coloured against
+the charm rather than to match it — gold on the red daruma, red on the white
+maneki neko, sunflower on the blue pysanka — so they read as beads, not as bits
+of the charm. The nazar keeps plain bone. **Beads on the Rope** turns the
+threading off.
 
 Each piece is placed a set number of charm-widths above the charm, not at a fixed
 fraction of the rope. A fraction that clears a small charm puts a bead squarely

@@ -69,39 +69,9 @@ public struct Charm: Equatable, Identifiable, Sendable {
             beadColor: RGB(0x3E6FD1)   // blue, against gold
         ),
         Charm(
-            glyph: "\u{1F52E}", name: "Crystal Ball",
-            ritual: Ritual(name: "Wipe It Clear", days: 7),
-            beadColor: RGB(0xE0A82E)   // gold, against violet
-        ),
-        Charm(
             glyph: "\u{1F9FF}", name: "Nazar",
             ritual: Ritual(name: "Turn Back the Eye", days: 10)
             // Bone beads, by choice: white already rings the eye.
-        ),
-        Charm(
-            glyph: "\u{1FAAC}", name: "Hamsa",
-            ritual: Ritual(name: "Turn the Palm Outward", days: 12),
-            beadColor: RGB(0xE8684A)   // coral, against blue
-        ),
-        Charm(
-            glyph: "\u{1F409}", name: "Dragon",
-            ritual: Ritual(name: "Wake the Dragon", days: 12),
-            beadColor: RGB(0xD83A2E)   // red, against green
-        ),
-        Charm(
-            glyph: "\u{2B50}", name: "Star",
-            ritual: Ritual(name: "Wish On It", days: 7),
-            beadColor: RGB(0x5A5FD6)   // night blue, against yellow
-        ),
-        Charm(
-            glyph: "\u{1F41A}", name: "Shell",
-            ritual: Ritual(name: "Hold It to Your Ear", days: 10),
-            beadColor: RGB(0x2A9D8F)   // sea teal, against sand pink
-        ),
-        Charm(
-            glyph: "\u{1F344}", name: "Mushroom",
-            ritual: Ritual(name: "Find Another", days: 14),
-            beadColor: RGB(0x4E9A3E)   // moss, against red
         ),
         // Drawn by hand, because a daruma is not in the emoji font. Bought
         // blank; one eye is painted when a wish is made, the other when it
@@ -135,14 +105,6 @@ public struct Charm: Equatable, Identifiable, Sendable {
             ritual: Ritual(name: "Write a New One", days: 365),
             artwork: "pysanka",
             beadColor: RGB(0xF5C21B)   // sunflower, against a blue egg
-        ),
-        // A lemon under a row of chillies, hung over a doorway to turn away bad
-        // luck. It is taken down and replaced when it dries out, traditionally
-        // on a Saturday — so a week is not an arbitrary number here.
-        Charm(
-            glyph: "\u{1F34B}", name: "Nimbu Mirchi",
-            ritual: Ritual(name: "Hang a Fresh One", days: 7),
-            threading: Ornament.nimbuMirchi
         ),
     ]
 
