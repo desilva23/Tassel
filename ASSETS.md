@@ -9,7 +9,7 @@ someone else's artwork, this is the document that answers it.
 | Charm glyphs | Unicode code points, rendered at runtime by the system emoji font | Unicode code points are not copyrightable; the font is Apple's and is never redistributed |
 | Threading (beads, chillies) | Beads drawn at runtime with `NSBezierPath`; chillies are Unicode, as above | Original / not copyrightable |
 | Cord | Drawn at runtime with `NSBezierPath` in `CharmView.draw(_:)` | Original |
-| App icon | Not yet made | — |
+| `Resources/AppIcon.icns` | The maneki-neko drawing above on a cord, drawn into a tile by `Tools/app-icon/main.swift` (`make icon`) | Original |
 | `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | Original |
 | `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | Original |

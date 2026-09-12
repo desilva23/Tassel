@@ -12,7 +12,7 @@ BUNDLE      := .build/$(APP_NAME).app
 VERSION     := $(shell /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Resources/Info.plist)
 DMG         := .build/$(APP_NAME)-$(VERSION).dmg
 
-.PHONY: all build app run install uninstall dist check clean
+.PHONY: all build app run install uninstall dist icon check clean
 
 all: app
 
@@ -26,6 +26,7 @@ app: build
 	mkdir -p "$(BUNDLE)/Contents/MacOS" "$(BUNDLE)/Contents/Resources"
 	cp "$(BUILD_DIR)/$(APP_NAME)" "$(BUNDLE)/Contents/MacOS/$(APP_NAME)"
 	cp Resources/Info.plist "$(BUNDLE)/Contents/Info.plist"
+	cp Resources/AppIcon.icns "$(BUNDLE)/Contents/Resources/AppIcon.icns"
 	## Drawn charm artwork, if there is any yet. The template is a guide for
 	## drawing and has no business being shipped.
 	@if ls Resources/Charms/*.png >/dev/null 2>&1; then \
@@ -83,6 +84,12 @@ dist: app
 	hdiutil create -quiet -volname "$(APP_NAME)" -srcfolder .build/dmg -ov -format UDZO "$(DMG)"
 	rm -rf .build/dmg
 	@echo "made $(DMG)"
+
+## Redraw Resources/AppIcon.icns from the maneki-neko drawing. The result is
+## checked in, so this is only needed when the icon itself should change.
+icon:
+	swiftc -O Sources/TasselCore/*.swift Tools/app-icon/main.swift -o .build/app-icon
+	.build/app-icon
 
 uninstall:
 	@pkill -x $(APP_NAME) 2>/dev/null || true
