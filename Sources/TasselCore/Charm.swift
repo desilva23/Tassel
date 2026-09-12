@@ -75,8 +75,8 @@ public struct Charm: Equatable, Identifiable, Sendable {
         ),
         Charm(
             glyph: "\u{1F9FF}", name: "Nazar",
-            ritual: Ritual(name: "Turn Back the Eye", days: 10),
-            beadColor: RGB(0xF0A23B)   // amber, against blue
+            ritual: Ritual(name: "Turn Back the Eye", days: 10)
+            // Bone beads, by choice: white already rings the eye.
         ),
         Charm(
             glyph: "\u{1FAAC}", name: "Hamsa",

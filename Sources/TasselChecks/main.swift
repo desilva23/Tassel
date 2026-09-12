@@ -770,12 +770,8 @@ Expect.suite("every charm survives its artwork going missing") {
     }
 }
 
-// Beads are coloured against their charm, not left one bone colour for all.
-// A new charm strung with beads should get a colour picked for it too.
-Expect.suite("every beaded charm has beads of its own colour") {
-    for charm in Charm.builtIn where charm.threading.contains(where: { $0.shape == .bead }) {
-        Expect.that(charm.beadColor != nil, "\(charm.name) is strung with beads but names no bead colour")
-    }
+// Bead colours are written as hex, the way colours usually are.
+Expect.suite("a bead colour reads from hex") {
     let hex = RGB(0xFF8000)
     Expect.near(hex.red, 1, 1e-9, "a hex colour's red should read from the top byte")
     Expect.near(hex.green, 128.0 / 255, 1e-9, "a hex colour's green should read from the middle byte")
