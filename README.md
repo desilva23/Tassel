@@ -1,5 +1,9 @@
 # Tassel
 
+![macOS 14 or later](https://img.shields.io/badge/macOS-14%20or%20later-000000?logo=apple&logoColor=white)
+![Apple Silicon and Intel](https://img.shields.io/badge/Apple%20Silicon%20%26%20Intel-supported-2ea44f)
+[![Homebrew](https://img.shields.io/badge/Homebrew-desilva23%2Ftap%2Ftassel-FBB040?logo=homebrew&logoColor=black)](https://github.com/desilva23/homebrew-tap)
+[![Free and open source, MIT](https://img.shields.io/badge/free%20%26%20open%20source-MIT-blue)](LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support%20Tassel-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/desilvas20l)
 
 A charm that hangs from your Mac menu bar, sways gently while you work, and stays
@@ -14,26 +18,38 @@ pendulum, so it drifts on an ambient breeze and swings when you call it.
 Working v0. The charm hangs, sways, swings on a hotkey, and can be swapped for
 any emoji you like. See [Not done yet](#not-done-yet) for the gaps.
 
-## Requirements
+## What you need
 
-macOS 14 or later. Xcode is **not** required — the Command Line Tools are enough:
+| | |
+|---|---|
+| **A Mac** | Apple Silicon (M1 or later) or Intel — both work |
+| **macOS 14 Sonoma or newer** | Check under Apple menu ▸ About This Mac |
+| **Homebrew** | The free tool that installs apps like this in one line. Not got it? Paste the one line from [brew.sh](https://brew.sh) into Terminal first |
+
+That is all: no Xcode, no account, nothing to pay.
+
+## Install
+
+1. Open **Terminal**: press <kbd>⌘</kbd> <kbd>Space</kbd>, type *Terminal*, press <kbd>Return</kbd>.
+2. Paste this and press <kbd>Return</kbd>. It can sit quietly for a minute while it downloads.
+
+   ```bash
+   brew install desilva23/tap/tassel
+   ```
+
+3. Open **Tassel** from Spotlight or Applications. A charm drops from your menu bar.
+
+To update it later, `brew upgrade tassel`. To remove it, `brew uninstall tassel`.
+
+### Building it yourself
+
+For developers. Xcode is **not** required — the Command Line Tools are enough:
 
 ```bash
 xcode-select --install
 ```
 
-## Install
-
-With [Homebrew](https://brew.sh):
-
-```bash
-brew install desilva23/tap/tassel
-```
-
-Then open **Tassel** from Applications or Spotlight. `brew upgrade tassel` keeps
-it up to date.
-
-### From source
+Then, from a clone of this repository:
 
 ```bash
 make install
