@@ -1,14 +1,1 @@
-# GitHub renders these as a "Sponsor" button at the top of the repository.
-#
-# The button only appears on a PUBLIC repository, so it will stay hidden until
-# this one is flipped to public in Settings.
-#
-# Uncomment the line and put your Buy Me a Coffee username in place of the
-# placeholder — it is the last part of your buymeacoffee.com/<username> URL.
-
-# buy_me_a_coffee: your-username
-
-# Other options, if you ever want them:
-# github: [desilva23]
-# ko_fi: your-username
-# custom: ["https://example.com/donate"]
+buy_me_a_coffee: desilvas20l
