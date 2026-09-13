@@ -10,6 +10,7 @@ someone else's artwork, this is the document that answers it.
 | Threading (beads, chillies) | Beads drawn at runtime with `NSBezierPath`; chillies are Unicode, as above | Original / not copyrightable |
 | Cord | Drawn at runtime with `NSBezierPath` in `CharmView.draw(_:)` | Original |
 | `Resources/AppIcon.icns` | The maneki-neko drawing above on a cord, drawn into a tile by `Tools/app-icon/main.swift` (`make icon`) | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `docs/icon.png`, `docs/charms.png` | The app icon, and the drawn charms hung on their cords, rendered for the README | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
 | `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
 | `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
 | `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
