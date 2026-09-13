@@ -85,8 +85,8 @@ dist: app
 	rm -rf .build/dmg
 	@echo "made $(DMG)"
 
-## Publish a new version through the Homebrew tap. See Tools/release.sh.
-##   make release VERSION=0.1.2 NOTES="What changed."
+## Publish a new version: a GitHub release, and the cask in Casks/ pointed at it.
+##   make release VERSION=0.1.3 NOTES="What changed."
 release:
 	Tools/release.sh "$(VERSION)"
 

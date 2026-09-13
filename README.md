@@ -28,7 +28,8 @@
 ## Install
 
 ```bash
-brew install desilva23/tap/tassel
+brew tap desilva23/tassel https://github.com/desilva23/Tassel
+brew install tassel
 ```
 
 Then open **Tassel** from Spotlight. Update with `brew upgrade tassel`.
