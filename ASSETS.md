@@ -9,15 +9,15 @@ someone else's artwork, this is the document that answers it.
 | Charm glyphs | Unicode code points, rendered at runtime by the system emoji font | Unicode code points are not copyrightable; the font is Apple's and is never redistributed |
 | Threading (beads, chillies) | Beads drawn at runtime with `NSBezierPath`; chillies are Unicode, as above | Original / not copyrightable |
 | Cord | Drawn at runtime with `NSBezierPath` in `CharmView.draw(_:)` | Original |
-| `Resources/AppIcon.icns` | The maneki-neko drawing above on a cord, drawn into a tile by `Tools/app-icon/main.swift` (`make icon`) | Original |
-| `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | Original |
-| `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | Original |
-| `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | Original |
-| `Resources/Charms/yansheng.png` | Drawn by Desilva Stalin | Original |
-| `Resources/Charms/pysanka.png` | Drawn by Desilva Stalin, trimmed by `Tools/prepare-charm.swift` | Original |
-| `Resources/Charms/maneki-neko.png` | Coloured by Desilva Stalin over the outline below, then trimmed by `Tools/prepare-charm.swift` | Original |
-| `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | Original |
-| `Resources/Templates/maneki-neko-outline-*.png` | Drawn from scratch by `Tools/maneki-neko-outline.swift`, from the traditional figure alone, as a base to colour under | Original |
+| `Resources/AppIcon.icns` | The maneki-neko drawing above on a cord, drawn into a tile by `Tools/app-icon/main.swift` (`make icon`) | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Charms/yansheng.png` | Drawn by Desilva Stalin | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Charms/pysanka.png` | Drawn by Desilva Stalin, trimmed by `Tools/prepare-charm.swift` | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Charms/maneki-neko.png` | Coloured by Desilva Stalin over the outline below, then trimmed by `Tools/prepare-charm.swift` | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Charms/TEMPLATE.png` | Drawn at runtime by a script, checked in as a guide | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `Resources/Templates/maneki-neko-outline-*.png` | Drawn from scratch by `Tools/maneki-neko-outline.swift`, from the traditional figure alone, as a base to colour under | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
 
 ## Drawing a charm
 

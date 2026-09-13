@@ -22,6 +22,17 @@ xcode-select --install
 
 ## Install
 
+With [Homebrew](https://brew.sh):
+
+```bash
+brew install desilva23/tap/tassel
+```
+
+Then open **Tassel** from Applications or Spotlight. `brew upgrade tassel` keeps
+it up to date.
+
+### From source
+
 ```bash
 make install
 ```
@@ -431,4 +442,7 @@ and rename the directories under `Sources/` to match.
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE).
+The code is MIT — see [LICENSE](LICENSE). The drawings (`Resources/Charms`,
+`Resources/Templates` and the app icon) are © Desilva Stalin under
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): share and adapt
+them with credit, but not commercially — see [LICENSE-ART](LICENSE-ART).
