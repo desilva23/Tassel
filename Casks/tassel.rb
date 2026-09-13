@@ -1,6 +1,6 @@
 cask "tassel" do
-  version "0.1.2"
-  sha256 "1d6771b8920cd593683d6b6a42de908919b5708ffb8053a82fcd13ef80d6eeac"
+  version "0.1.3"
+  sha256 "fe31cbff59feac42ddda57918c9cd5473b5195a4684a4be019159c586a4f212e"
 
   url "https://github.com/desilva23/Tassel/releases/download/v#{version}/Tassel-#{version}.dmg"
   name "Tassel"
