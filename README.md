@@ -20,7 +20,7 @@ any emoji you like. See [Not done yet](#not-done-yet) for the gaps.
 
 ## What you need
 
-| | |
+| Requirement | Details |
 |---|---|
 | **A Mac** | Apple Silicon (M1 or later) or Intel — both work |
 | **macOS 14 Sonoma or newer** | Check under Apple menu ▸ About This Mac |
