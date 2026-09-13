@@ -24,12 +24,17 @@ public struct Charm: Equatable, Identifiable, Sendable {
     /// the charm rather than match it, so the beads read as beads and not as
     /// pieces of the charm. Nil keeps plain bone.
     public let beadColor: RGB?
+    /// How much larger than usual to draw its artwork. Drawings are sized by
+    /// height, so a tall, narrow one — a cat with its cord, an egg — looks
+    /// smaller than a round one of the same height; this evens it out by eye.
+    public let artworkScale: Double
 
     public init(
         glyph: String,
         name: String,
         ritual: Ritual = .generic,
         artwork: String? = nil,
+        artworkScale: Double = 1,
         beadColor: RGB? = nil,
         threading: [Ornament] = Ornament.standard
     ) {
@@ -37,6 +42,7 @@ public struct Charm: Equatable, Identifiable, Sendable {
         self.name = name
         self.ritual = ritual
         self.artwork = artwork
+        self.artworkScale = artworkScale
         self.beadColor = beadColor
         self.threading = threading
     }
@@ -94,6 +100,7 @@ public struct Charm: Equatable, Identifiable, Sendable {
             glyph: "\u{1F431}", name: "Maneki Neko",
             ritual: Ritual(name: "Polish the Koban", days: 9),
             artwork: "maneki-neko",
+            artworkScale: 1.2,
             beadColor: RGB(0xD7261E)   // collar red, against a white cat
         ),
         // Drawn by hand: a Ukrainian decorated egg, with the wheat, birds,
@@ -103,7 +110,8 @@ public struct Charm: Equatable, Identifiable, Sendable {
         Charm(
             glyph: "\u{1F95A}", name: "Pysanka",
             ritual: Ritual(name: "Write a New One", days: 365),
-            artwork: "pysanka"
+            artwork: "pysanka",
+            artworkScale: 1.2
             // Bone beads, by choice: the egg is colourful enough on its own.
         ),
     ]

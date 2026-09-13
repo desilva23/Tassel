@@ -315,7 +315,7 @@ final class CharmView: NSView {
             content: artwork.content,
             hookX: artwork.hookX,
             aspect: artwork.aspect,
-            charmSize: charmSize,
+            charmSize: charmSize * charm.artworkScale,
             hanging: true
         )
         // A little slack round the edge, because nobody clicks a silhouette
@@ -627,7 +627,7 @@ final class CharmView: NSView {
                 content: artwork.content,
                 hookX: artwork.hookX,
                 aspect: artwork.aspect,
-                charmSize: size,
+                charmSize: size * charm.artworkScale,
                 hanging: hanging
             ),
             from: .zero,
