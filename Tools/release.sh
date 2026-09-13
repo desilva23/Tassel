@@ -1,20 +1,17 @@
 #!/bin/bash
-# Publishes a new version of Tassel through the Homebrew tap: bumps the version,
-# builds the disk image, releases it on desilva23/homebrew-tap and points the
-# cask at it, then checks the public download matches what was built.
+# Publishes a new version of Tassel: bumps the version, builds the disk image,
+# points the Homebrew cask in Casks/tassel.rb at it, releases it on GitHub, and
+# checks the public download matches what was built.
 #
-#   make release VERSION=0.1.2
-#   make release VERSION=0.1.2 NOTES="Adds the vegvisir."
-#
-# Expects the tap checked out beside this repository (../homebrew-tap), or at
-# TAP_DIR.
+#   make release VERSION=0.1.3
+#   make release VERSION=0.1.3 NOTES="Adds the hamsa."
 
 set -euo pipefail
 
 version="${1:-}"
-tap_repo="desilva23/homebrew-tap"
-tap_dir="${TAP_DIR:-$(cd "$(dirname "$0")/../.." && pwd)/homebrew-tap}"
+repo="desilva23/Tassel"
 plist="Resources/Info.plist"
+cask="Casks/tassel.rb"
 current=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$plist")
 build=$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$plist")
 
@@ -26,47 +23,45 @@ next_patch() { IFS=. read -r major minor patch <<<"$current"; echo "$major.$mino
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "$version is not a version like 1.2.3"
 [[ "$(git branch --show-current)" == main ]] || fail "releases are made from main"
 [[ -z "$(git status --porcelain)" ]] || fail "commit or stash your changes first"
-[[ -d "$tap_dir/.git" ]] || fail "no tap checkout at $tap_dir (set TAP_DIR)"
-[[ -z "$(git -C "$tap_dir" status --porcelain)" ]] || fail "the tap checkout at $tap_dir has uncommitted changes"
-if gh release view "tassel-$version" --repo "$tap_repo" >/dev/null 2>&1; then
-    fail "tassel-$version is already released"
+if gh release view "v$version" --repo "$repo" >/dev/null 2>&1; then
+    fail "v$version is already released"
 fi
 
 git pull -q --ff-only
-git -C "$tap_dir" pull -q --ff-only
 make check
 
 echo "==> Tassel $current -> $version"
-# Put the version back if the build fails before it is committed.
-trap 'git checkout -q -- "$plist"' ERR
+# Put everything back if the build fails before it is committed.
+trap 'git checkout -q -- "$plist" "$cask"' ERR
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $version" \
     -c "Set :CFBundleVersion $((build + 1))" "$plist"
 make dist
 dmg=".build/Tassel-$version.dmg"
 sha=$(shasum -a 256 "$dmg" | cut -d' ' -f1)
-git add "$plist"
+sed -i '' -e "s/^  version \".*\"\$/  version \"$version\"/" \
+    -e "s/^  sha256 \".*\"\$/  sha256 \"$sha\"/" "$cask"
+git add "$plist" "$cask"
 git commit -q -m "Version $version"
 trap - ERR
 git push -q
 
 echo "==> Publishing the disk image"
-gh release create "tassel-$version" "$dmg" --repo "$tap_repo" --title "Tassel $version" \
-    --notes "${NOTES:-Tassel $version.}
+gh release create "v$version" "$dmg" --repo "$repo" --target "$(git rev-parse HEAD)" \
+    --title "Tassel $version" --notes "${NOTES:-Tassel $version.}
 
-Install with \`brew install desilva23/tap/tassel\`, or update with \`brew upgrade tassel\`."
+Install with Homebrew:
 
-echo "==> Pointing the cask at it"
-cask="$tap_dir/Casks/tassel.rb"
-sed -i '' -e "s/^  version \".*\"\$/  version \"$version\"/" \
-    -e "s/^  sha256 \".*\"\$/  sha256 \"$sha\"/" "$cask"
-git -C "$tap_dir" commit -q -m "Tassel $version" -- Casks/tassel.rb
-git -C "$tap_dir" push -q
+\`\`\`
+brew tap desilva23/tassel https://github.com/desilva23/Tassel
+brew install tassel
+\`\`\`
+
+Already installed? \`brew upgrade tassel\`."
 
 echo "==> Checking the public download"
-url="https://github.com/$tap_repo/releases/download/tassel-$version/Tassel-$version.dmg"
+url="https://github.com/$repo/releases/download/v$version/Tassel-$version.dmg"
 published=$(curl -sfL "$url" | shasum -a 256 | cut -d' ' -f1)
 [[ "$published" == "$sha" ]] || fail "the published download does not match the build"
 
 echo "==> Released Tassel $version"
-echo "    New installs:  brew install desilva23/tap/tassel"
-echo "    Updates:       brew upgrade tassel"
+echo "    Updates: brew upgrade tassel"
