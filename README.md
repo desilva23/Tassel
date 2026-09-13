@@ -7,13 +7,18 @@
 <p align="center">A hand-drawn lucky charm that hangs from your Mac's menu bar.</p>
 
 <p align="center">
+  <a href="https://github.com/desilva23/Tassel/releases/latest"><img src="https://img.shields.io/github/v/release/desilva23/Tassel?label=release" alt="Latest release"></a>
+  <a href="https://github.com/desilva23/Tassel/releases"><img src="https://img.shields.io/github/downloads/desilva23/Tassel/total" alt="Downloads"></a>
+  <a href="https://github.com/desilva23/Tassel/actions/workflows/ci.yml"><img src="https://github.com/desilva23/Tassel/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
   <img src="https://img.shields.io/badge/macOS-14%20or%20later-000000?logo=apple&logoColor=white" alt="macOS 14 or later">
   <img src="https://img.shields.io/badge/Apple%20Silicon%20%26%20Intel-supported-2ea44f" alt="Apple Silicon and Intel">
   <a href="LICENSE"><img src="https://img.shields.io/badge/free%20%26%20open%20source-MIT-blue" alt="Free and open source, MIT"></a>
   <a href="https://buymeacoffee.com/desilvas20l"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee"></a>
 </p>
 
-![Tassel's charms hanging on their cords: four-leaf clover, Yansheng, bell, nazar, daruma, maneki neko and pysanka](docs/charms.png)
+<p align="center">
+  <img src="docs/demo.gif" width="720" alt="The maneki neko hanging from the menu bar on its beaded cord: the pointer flicks the rope, which bends, then the charm, which swings and settles">
+</p>
 
 - **Moves like a real charm.** It sways while you work and swings when you bat it.
 - **Charms from around the world,** most of them hand-drawn, each with its own little ritual.
@@ -45,6 +50,8 @@ Then open **Tassel** from Spotlight. Update with `brew upgrade tassel`.
 | Change the charm, size or spot | Click Tassel in the menu bar |
 
 ## The charms
+
+![Tassel's charms hanging on their cords: four-leaf clover, Yansheng, bell, nazar, daruma, maneki neko and pysanka](docs/charms.png)
 
 | Charm | Ritual |
 |---|---|
