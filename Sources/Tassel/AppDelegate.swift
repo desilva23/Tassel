@@ -123,6 +123,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         menu.addItem(login)
 
+        let coffee = NSMenuItem(title: "Buy Me a Coffee\u{2026}", action: #selector(openSupportPage), keyEquivalent: "")
+        coffee.target = self
+        coffee.toolTip = "Tassel is free. If it brings you luck, you can support it."
+        menu.addItem(coffee)
+
         menu.addItem(.separator())
 
         menu.addItem(
@@ -445,6 +450,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             alert.runModal()
         }
         refreshMenu()
+    }
+
+    private static let supportPage = URL(string: "https://buymeacoffee.com/desilvas20l")!
+
+    @objc private func openSupportPage() {
+        NSWorkspace.shared.open(Self.supportPage)
     }
 
     @objc private func toggleOrnaments() {

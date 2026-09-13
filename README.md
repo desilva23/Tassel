@@ -1,5 +1,7 @@
 # Tassel
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support%20Tassel-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/desilvas20l)
+
 A charm that hangs from your Mac menu bar, sways gently while you work, and stays
 out of the way of every click — until you reach for it.
 
@@ -437,6 +439,14 @@ grep -rl Tassel . --exclude-dir=.build --exclude-dir=.git
 ```
 
 and rename the directories under `Sources/` to match.
+
+## Support
+
+Tassel is free. If it brings you luck, you can
+[buy me a coffee](https://buymeacoffee.com/desilvas20l): it pays for the time to
+draw the next charms, and towards the Apple Developer membership that would let
+Tassel open with no warning at all. The same link is under **Buy Me a Coffee…**
+in the app's menu.
 
 ## Licence
 
