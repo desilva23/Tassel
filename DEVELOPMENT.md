@@ -59,6 +59,7 @@ It is also published through Homebrew, which installs it with no warning. This
 repository is its own tap: the cask is `Casks/tassel.rb`, so it is tapped by URL.
 
 ```bash
+brew trust desilva23/tassel
 brew tap desilva23/tassel https://github.com/desilva23/Tassel
 brew install tassel
 ```

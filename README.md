@@ -33,6 +33,7 @@
 ## Install
 
 ```bash
+brew trust desilva23/tassel
 brew tap desilva23/tassel https://github.com/desilva23/Tassel
 brew install tassel
 ```
