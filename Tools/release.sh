@@ -52,7 +52,7 @@ gh release create "v$version" "$dmg" --repo "$repo" --target "$(git rev-parse HE
 Install with Homebrew:
 
 \`\`\`
-brew trust desilva23/tassel
+brew trust https://github.com/desilva23/Tassel
 brew tap desilva23/tassel https://github.com/desilva23/Tassel
 brew install tassel
 \`\`\`
