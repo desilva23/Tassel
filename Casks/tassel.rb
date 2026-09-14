@@ -13,9 +13,8 @@ cask "tassel" do
 
   # Tassel is not notarized, so macOS would refuse the first open and send the
   # user to System Settings. Clearing the download flag lets it open directly.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/Tassel.app"]
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{appdir}/Tassel.app"]
   end
 
   uninstall quit: "com.example.tassel"
