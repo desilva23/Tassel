@@ -11,7 +11,7 @@ part the feed shows before "see more", so it is the one place the styling buys
 anything. Everything else stays plain letters — "Tassel" and "GitHub" in
 Unicode are invisible to search, and screen readers cannot read them.
 
-𝙈 𝗯𝘂𝗶𝗹𝘁 𝘀𝗼𝗺𝗲𝘁𝗵𝗶𝗻𝗴 𝗰𝗼𝗺𝗽𝗹𝗲𝘁𝗲𝗹𝘆 𝘂𝘀𝗲𝗹𝗲𝘀𝘀 𝘁𝗵𝗶𝘀 𝗺𝗼𝗻𝘁𝗵. 𝙎𝗻 𝗽𝘂𝗿𝗽𝗼𝘀𝗲.
+𝙄 𝙗𝙪𝙞𝙡𝙩 𝙨𝙤𝙢𝙚𝙩𝙝𝙞𝙣𝙜 𝙘𝙤𝙢𝙥𝙡𝙚𝙩𝙚𝙡𝙮 𝙪𝙨𝙚𝙡𝙚𝙨𝙨 𝙩𝙝𝙞𝙨 𝙢𝙤𝙣𝙩𝙝. 𝙊𝙣 𝙥𝙪𝙧𝙥𝙤𝙨𝙚.
 
 Tassel hangs a hand-drawn lucky charm from your Mac's menu bar, on a little rope. No sync. No streaks. No notifications. No AI. It doesn't want your email address.
 
