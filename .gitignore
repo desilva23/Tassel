@@ -8,6 +8,6 @@ DerivedData/
 
 # The launch video's working files: a render before its poster is baked in, and
 # a music bed whose redistribution terms are not documented (see brag-output/README.md).
-brag-output/composition/renders/
-brag-output/composition/assets/music/
-brag-output/composition/node_modules/
+brag-output/composition*/renders/
+brag-output/composition*/assets/music/
+brag-output/composition*/node_modules/

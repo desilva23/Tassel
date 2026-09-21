@@ -1,7 +1,8 @@
 # The launch video
 
-`brag.mp4` — 31.4s, 1920x1080, with `brag.jpg` baked in as its first frame so it
-has a poster. `share-copy.txt` is the text that goes with it.
+`brag.mp4` — 31.4s, 1920x1080 — and `brag-vertical.mp4`, the same video framed
+4:5 for a phone feed. Each has its poster baked in as its first frame.
+`share-copy.txt` is the text that goes with them.
 
 Every moving shot is rendered from Tassel's own physics and drawings, on a
 desktop drawn at its real size: a 1440x900-point screen, a 24pt menu bar, a 44pt
@@ -16,6 +17,7 @@ camera and all:
 ```sh
 swiftc -O Sources/TasselCore/*.swift brag-output/clip-renderer/main.swift -o /tmp/render
 BG=dusk /tmp/render . main /tmp/frames          # 852 PNGs at 3840x2160
+CUT=tall BG=dusk /tmp/render . main /tmp/tall   # the same, framed 4:5
 ffmpeg -framerate 30 -i /tmp/frames/%04d.png -vf scale=1920:1080:flags=lanczos \
   -c:v libx264 -preset slow -crf 19 -pix_fmt yuv420p \
   brag-output/composition/assets/clips/main.mp4
@@ -24,6 +26,11 @@ ffmpeg -framerate 30 -i /tmp/frames/%04d.png -vf scale=1920:1080:flags=lanczos \
 `BG` picks the wallpaper (`dusk`, `aurora`, `desk`). `STILL_AT=9.5` writes that
 one frame only, and `PROBE="9.5,10.3"` prints where the charm is at those times —
 both for checking a change without rendering the lot.
+
+`CUT=tall` reframes the camera for the vertical cut, which
+`composition-vertical/` then lays out with its words under the screen instead of
+beside it. Everything else — the choreography, the menus, the timing, the audio —
+is the same in both.
 
 `composition/` lays the captions, menus, pointer and audio over that clip with
 [Hyperframes](https://hyperframes.heygen.com). The menus and the pointer sit on

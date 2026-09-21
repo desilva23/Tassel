@@ -17,7 +17,10 @@ let arguments = CommandLine.arguments
 let repo = arguments[1], clip = arguments[2], outDir = arguments[3]
 let W: CGFloat = 1440, H: CGFloat = 900, fps = 30.0, substeps = 8
 // The video frame, supersampled; the encode step scales it back to 1920x1080.
-let frameW: CGFloat = 1920, frameH: CGFloat = 1080, scale: CGFloat = 2
+// CUT=wide gives the 16:9 video; CUT=tall gives the 4:5 one for a phone feed.
+let tall = ProcessInfo.processInfo.environment["CUT"] == "tall"
+let frameW: CGFloat = tall ? 1080 : 1920, frameH: CGFloat = tall ? 1350 : 1080
+let scale: CGFloat = 2
 let barH: CGFloat = 24
 let menuBottom = H - barH
 
@@ -387,8 +390,12 @@ statusIcon = "maneki-neko"
 // showing past the screen's own top and right edges — 835x470 points of screen
 // at 2.3x.
 let wideZoom = frameW / W
-let wide = CGPoint(x: W / 2, y: H - frameH / 2 / wideZoom)
-let closeZoom: CGFloat = 2.3
+// Wide, the 16:9 cut is the screen's full width; the tall cut sets the whole
+// screen high in the frame and leaves the space below it for the words.
+let wide = tall
+    ? CGPoint(x: W / 2, y: H / 2 - (frameH / 2 - 470) / wideZoom)
+    : CGPoint(x: W / 2, y: H - frameH / 2 / wideZoom)
+let closeZoom: CGFloat = tall ? 2.2 : 2.3
 let close = CGPoint(x: W - frameW / 2 / closeZoom - 6, y: H - frameH / 2 / closeZoom)
 shots = [
     Shot(t: 0, centre: wide, zoom: wideZoom), Shot(t: 4.18, centre: wide, zoom: wideZoom),
@@ -540,6 +547,21 @@ for frame in 0..<frames {
     ctx.scaleBy(x: shot.zoom, y: shot.zoom)
     ctx.translateBy(x: -shot.centre.x, y: -shot.centre.y)
 
+    // Beyond the screen's edges there is no screen: the tall cut frames it as a
+    // band with the desk around it.
+    if tall {
+        NSGraphicsContext.saveGraphicsState()
+        ctx.saveGState()
+        ctx.resetClip()
+        ctx.concatenate(ctx.ctm.inverted())
+        NSGradient(colors: [hex(0x0B0E1F), hex(0x171231)])!
+            .draw(in: NSRect(x: 0, y: 0, width: frameW * scale, height: frameH * scale), angle: -90)
+        ctx.restoreGState()
+        NSGraphicsContext.restoreGraphicsState()
+    }
+    NSGraphicsContext.saveGraphicsState()
+    NSBezierPath(rect: NSRect(x: 0, y: 0, width: W, height: H)).addClip()
+
     wallpaper()
     // Nothing shows above the menu bar: a raised charm is hidden behind it.
     NSGraphicsContext.saveGraphicsState()
@@ -548,6 +570,7 @@ for frame in 0..<frames {
     hangers.forEach { drawHanger($0, ctx: ctx) }
     NSGraphicsContext.restoreGraphicsState()
     menuBar(statusIcon: statusIcon, iconX: anchor.x)
+    NSGraphicsContext.restoreGraphicsState()
     if let cur = last, cur.x > -5, cur.x < W + 5, cur.y > -5, cur.y < H + 5 {
         // The app swaps the arrow for a hand over a charm it can take hold of.
         if t >= takeHold - 0.22, t < letGo { drawHand(at: cur, closed: t >= takeHold) }

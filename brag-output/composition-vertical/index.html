@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1350" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1080px; height: 1350px; overflow: hidden; background: #0b0e1f; }
+      #root { position: relative; width: 1080px; height: 1350px; overflow: hidden;
+        font-family: -apple-system, "SF Pro Display", system-ui, sans-serif; color: #fff; }
+      .layer { position: absolute; inset: 0; pointer-events: none; }
+      #shot { position: absolute; inset: 0; width: 1080px; height: 1350px; object-fit: cover; }
+
+      /* The menus and the pointer live on the screen, in screen points, and the
+         stage carries the same camera move the clip was rendered with. */
+      #stage { position: absolute; left: 0; top: 0; width: 1440px; height: 900px;
+        transform-origin: 0 0; pointer-events: none; }
+
+      /* Scene copy, below the screen, centred */
+      .copy { position: absolute; left: 60px; width: 960px; text-align: center;
+        text-shadow: 0 2px 26px rgba(10, 8, 34, 0.55); }
+      .h1 { font-size: 66px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+      .h2 { font-size: 36px; font-weight: 500; line-height: 1.3; color: rgba(255, 255, 255, 0.84); margin-top: 18px; }
+      .brand { display: flex; align-items: center; justify-content: center; gap: 24px; }
+      .brand img { width: 108px; height: 108px; }
+      .brand .name { font-size: 104px; font-weight: 800; letter-spacing: -0.03em; }
+      .swap { position: absolute; left: 0; right: 0; top: 0; }
+
+      /* macOS menus, at the size they really are on the screen */
+      .menu { position: absolute; padding: 4px; border-radius: 7px; background: rgba(42, 38, 60, 0.95);
+        border: 0.5px solid rgba(255, 255, 255, 0.13);
+        box-shadow: 0 13px 32px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(0, 0, 0, 0.4);
+        font-family: -apple-system, system-ui, sans-serif; }
+      .row { position: relative; height: 21px; display: flex; align-items: center; gap: 7px;
+        padding: 0 8px 0 22px; font-size: 13px; color: #fff; white-space: nowrap; }
+      .row .hl { position: absolute; inset: 0; border-radius: 4px; background: #2f6feb; opacity: 0; }
+      .row > span, .row > img { position: relative; }
+      .row .check { position: absolute; left: 7px; font-size: 11px; }
+      .row .more { margin-left: auto; opacity: 0.6; font-size: 11px; }
+      .row .key { margin-left: auto; opacity: 0.5; }
+      .row .ico { width: 16px; height: 16px; object-fit: contain; }
+      .row .emo { width: 16px; font-size: 13px; text-align: center; }
+      .row.header { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.48); padding-left: 8px; height: 18px; }
+      .sep { height: 9px; display: flex; align-items: center; padding: 0 5px; }
+      .sep::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.14); }
+      .statushl { position: absolute; left: 1194px; top: 2px; width: 32px; height: 20px; border-radius: 5px;
+        background: rgba(255, 255, 255, 0.22); }
+
+      /* The pointer, drawn above the menus; its origin is the arrow's tip */
+      #cursor { position: absolute; left: 0; top: 0; width: 13px; height: 20px; }
+
+      /* Outro */
+      #outro-bg { position: absolute; inset: 0;
+        background: radial-gradient(ellipse 70% 55% at 50% 100%, rgba(240, 160, 122, 0.35), rgba(240, 160, 122, 0) 70%),
+          linear-gradient(180deg, #141a3c 0%, #2b2152 70%, #3b2d66 100%); }
+      .outro { position: absolute; left: 0; right: 0; top: 420px; display: flex; flex-direction: column; align-items: center; }
+      .outro img { width: 210px; height: 210px; }
+      .outro .name { font-size: 104px; font-weight: 800; letter-spacing: -0.03em; margin-top: 16px; }
+      .outro .line { font-size: 38px; font-weight: 500; color: rgba(255, 255, 255, 0.84); margin-top: 12px; }
+      .outro .url { font-size: 30px; font-family: ui-monospace, "SF Mono", Menlo, monospace; color: #e8b53a; margin-top: 24px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="31.37" data-width="1080" data-height="1350">
+
+      <!-- The app on a real 1920x1080 screen, rendered from TasselCore's rope physics -->
+      <video id="shot" class="clip" src="assets/clips/main.mp4" muted playsinline
+        data-start="0" data-duration="28.4" data-track-index="0"></video>
+
+      <!-- Everything that belongs to the screen moves with the clip's camera -->
+      <div id="stage" class="clip layer" data-start="0" data-duration="31.37" data-track-index="9">
+
+        <!-- Tassel menu, first time: switching to the pysanka -->
+        <div id="m1" class="clip layer" data-start="13.18" data-duration="1.62" data-track-index="2">
+          <div class="statushl"></div>
+          <div class="menu" style="left: 1194px; top: 25px; width: 210px">
+            <div class="row"><span>Hide Charm</span></div>
+            <div class="row"><span>Drop In</span></div>
+            <div class="sep"></div>
+            <div class="row r-charm"><div class="hl"></div><span>Charm</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Size</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Position</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Polish the Koban</span></div>
+            <div class="sep"></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Beads on the Rope</span></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Grab With Pointer</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Open at Login</span></div>
+            <div class="row"><span>Buy Me a Coffee&#x2026;</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Quit Tassel</span><span class="key">&#x2318;Q</span></div>
+          </div>
+        </div>
+        <div id="s1" class="clip layer" data-start="13.70" data-duration="1.10" data-track-index="3">
+          <div class="menu" style="left: 1004px; top: 76px; width: 190px">
+            <div class="row"><span class="emo">&#x1F340;</span><span>Four-Leaf Clover</span></div>
+            <div class="row"><img class="ico" src="assets/img/charm-yansheng.png" alt="" /><span>Yansheng</span></div>
+            <div class="row"><span class="emo">&#x1F514;</span><span>Bell</span></div>
+            <div class="row"><span class="emo">&#x1F9FF;</span><span>Nazar</span></div>
+            <div class="row"><img class="ico" src="assets/img/charm-daruma-blank.png" alt="" /><span>Daruma</span></div>
+            <div class="row"><span class="check">&#x2713;</span><img class="ico" src="assets/img/charm-maneki-neko.png" alt="" /><span>Maneki Neko</span></div>
+            <div class="row r-pick"><div class="hl"></div><img class="ico" src="assets/img/charm-pysanka.png" alt="" /><span>Pysanka</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Custom Emoji&#x2026;</span></div>
+          </div>
+        </div>
+
+        <!-- Tassel menu, second time: switching to the daruma -->
+        <div id="m2" class="clip layer" data-start="15.80" data-duration="1.10" data-track-index="2">
+          <div class="statushl"></div>
+          <div class="menu" style="left: 1194px; top: 25px; width: 210px">
+            <div class="row"><span>Hide Charm</span></div>
+            <div class="row"><span>Drop In</span></div>
+            <div class="sep"></div>
+            <div class="row r-charm"><div class="hl"></div><span>Charm</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Size</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Position</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Write a New One</span></div>
+            <div class="sep"></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Beads on the Rope</span></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Grab With Pointer</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Open at Login</span></div>
+            <div class="row"><span>Buy Me a Coffee&#x2026;</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Quit Tassel</span><span class="key">&#x2318;Q</span></div>
+          </div>
+        </div>
+        <div id="s2" class="clip layer" data-start="16.06" data-duration="0.84" data-track-index="3">
+          <div class="menu" style="left: 1004px; top: 76px; width: 190px">
+            <div class="row"><span class="emo">&#x1F340;</span><span>Four-Leaf Clover</span></div>
+            <div class="row"><img class="ico" src="assets/img/charm-yansheng.png" alt="" /><span>Yansheng</span></div>
+            <div class="row"><span class="emo">&#x1F514;</span><span>Bell</span></div>
+            <div class="row"><span class="emo">&#x1F9FF;</span><span>Nazar</span></div>
+            <div class="row r-pick"><div class="hl"></div><img class="ico" src="assets/img/charm-daruma-blank.png" alt="" /><span>Daruma</span></div>
+            <div class="row"><img class="ico" src="assets/img/charm-maneki-neko.png" alt="" /><span>Maneki Neko</span></div>
+            <div class="row"><span class="check">&#x2713;</span><img class="ico" src="assets/img/charm-pysanka.png" alt="" /><span>Pysanka</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Custom Emoji&#x2026;</span></div>
+          </div>
+        </div>
+
+        <!-- Right-click menus on the daruma -->
+        <div id="c1" class="clip layer" data-start="18.41" data-duration="0.64" data-track-index="2">
+          <div class="menu" style="left: 1204px; top: 205px; width: 175px">
+            <div class="row header"><span>Daruma</span></div>
+            <div class="row r-pick"><div class="hl"></div><span>Make a Wish</span></div>
+          </div>
+        </div>
+        <div id="c2" class="clip layer" data-start="20.50" data-duration="0.58" data-track-index="2">
+          <div class="menu" style="left: 1204px; top: 205px; width: 185px">
+            <div class="row header"><span>Daruma</span></div>
+            <div class="row r-pick"><div class="hl"></div><span>My Wish Came True</span></div>
+          </div>
+        </div>
+
+        <!-- Tassel menu, third and fourth time: the size -->
+        <div id="m3" class="clip layer" data-start="22.59" data-duration="1.09" data-track-index="2">
+          <div class="statushl"></div>
+          <div class="menu" style="left: 1194px; top: 25px; width: 210px">
+            <div class="row"><span>Hide Charm</span></div>
+            <div class="row"><span>Drop In</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Charm</span><span class="more">&#x203A;</span></div>
+            <div class="row r-size"><div class="hl"></div><span>Size</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Position</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Make a Wish</span></div>
+            <div class="sep"></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Beads on the Rope</span></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Grab With Pointer</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Open at Login</span></div>
+            <div class="row"><span>Buy Me a Coffee&#x2026;</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Quit Tassel</span><span class="key">&#x2318;Q</span></div>
+          </div>
+        </div>
+        <div id="s3" class="clip layer" data-start="23.12" data-duration="0.56" data-track-index="3">
+          <div class="menu" style="left: 1058px; top: 97px; width: 140px">
+            <div class="row r-pick"><div class="hl"></div><span>Small</span></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Medium</span></div>
+            <div class="row"><span>Large</span></div>
+            <div class="row"><span>Extra Large</span></div>
+          </div>
+        </div>
+        <div id="m4" class="clip layer" data-start="24.84" data-duration="0.93" data-track-index="2">
+          <div class="statushl"></div>
+          <div class="menu" style="left: 1194px; top: 25px; width: 210px">
+            <div class="row"><span>Hide Charm</span></div>
+            <div class="row"><span>Drop In</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Charm</span><span class="more">&#x203A;</span></div>
+            <div class="row r-size"><div class="hl"></div><span>Size</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Position</span><span class="more">&#x203A;</span></div>
+            <div class="row"><span>Make a Wish</span></div>
+            <div class="sep"></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Beads on the Rope</span></div>
+            <div class="row"><span class="check">&#x2713;</span><span>Grab With Pointer</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Open at Login</span></div>
+            <div class="row"><span>Buy Me a Coffee&#x2026;</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Quit Tassel</span><span class="key">&#x2318;Q</span></div>
+          </div>
+        </div>
+        <div id="s4" class="clip layer" data-start="25.26" data-duration="0.51" data-track-index="3">
+          <div class="menu" style="left: 1058px; top: 97px; width: 140px">
+            <div class="row"><span class="check">&#x2713;</span><span>Small</span></div>
+            <div class="row"><span>Medium</span></div>
+            <div class="row"><span>Large</span></div>
+            <div class="row r-pick"><div class="hl"></div><span>Extra Large</span></div>
+          </div>
+        </div>
+
+        <!-- The pointer, while it works the menus -->
+        <div id="pointer" class="clip layer" data-start="12.71" data-duration="13.4" data-track-index="4">
+          <svg id="cursor" viewBox="0 0 26 40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1 L1 35 L9.4 27.4 L15.4 40.2 L20.6 37.8 L14.8 25.4 L25.4 25.4 Z" transform="translate(0 -1)"
+              fill="#fff" stroke="#000" stroke-width="2.2" stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- 1 · Hook -->
+      <div id="s-hook" class="clip layer" data-start="0" data-duration="3.62" data-track-index="1">
+        <div class="copy" style="top: 900px"><div class="h1">Your menu bar is<br />missing something.</div></div>
+      </div>
+
+      <!-- 2 · Reveal -->
+      <div id="s-brand" class="clip layer" data-start="3.4" data-duration="2.94" data-track-index="1">
+        <div class="copy" style="top: 880px">
+          <div class="brand"><img src="assets/img/icon.png" alt="" /><span class="name">Tassel</span></div>
+          <div class="h2 tag">Hand-drawn lucky charms<br />for your menu bar.</div>
+        </div>
+      </div>
+
+      <!-- 3 · The flick -->
+      <div id="s-flick" class="clip layer" data-start="6.34" data-duration="2.2" data-track-index="1">
+        <div class="copy" style="top: 900px">
+          <div class="h1">Flick it.<br />It's a real rope.</div>
+          <div class="h2 sub">It bends, swings and settles.</div>
+        </div>
+      </div>
+
+      <!-- 4 · The pull -->
+      <div id="s-pull" class="clip layer" data-start="8.6" data-duration="4.05" data-track-index="1">
+        <div class="copy" style="top: 900px">
+          <div class="h1">Or take hold<br />and pull it down.</div>
+          <div class="h2 sub">Let go, and the cord springs back.</div>
+        </div>
+      </div>
+
+      <!-- 5 · Pick a charm -->
+      <div id="s-pick" class="clip layer" data-start="12.65" data-duration="4.72" data-track-index="1">
+        <div class="copy" style="top: 900px">
+          <div class="h1">Pick your charm.</div>
+          <div class="h2 sub">Change it any time from the menu bar.</div>
+        </div>
+      </div>
+
+      <!-- 6 · The ritual -->
+      <div id="s-ritual" class="clip layer" data-start="17.37" data-duration="4.7" data-track-index="1">
+        <div class="copy" style="top: 900px">
+          <div class="h1">Every charm<br />has a ritual.</div>
+          <div class="h2" style="position: relative; height: 50px">
+            <span class="swap a">Make a wish: paint one eye.</span>
+            <span class="swap b">Wish granted: paint the other.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 · The size -->
+      <div id="s-size" class="clip layer" data-start="22.07" data-duration="5.75" data-track-index="1">
+        <div class="copy" style="top: 900px">
+          <div class="h1">Any size you like.</div>
+          <div class="h2 sub">Small, medium, large &#x2014; or extra large.</div>
+        </div>
+      </div>
+
+      <!-- 8 · Outro -->
+      <div id="s-outro" class="clip layer" data-start="27.82" data-duration="3.55" data-track-index="5">
+        <div id="outro-bg"></div>
+        <div class="outro">
+          <img class="o-icon" src="assets/img/icon.png" alt="" />
+          <div class="name o-name">Tassel</div>
+          <div class="line o-line">Free &amp; open source &#xB7; macOS 14+</div>
+          <div class="url o-url">github.com/desilva23/Tassel</div>
+        </div>
+      </div>
+
+      <!-- Audio: a warm bed, and a few sounds matched to what happens on screen -->
+      <audio id="bed" data-start="0" data-duration="31.37" data-track-index="10" data-volume="0.32" src="assets/music/bed.mp3"></audio>
+      <audio id="sfx-drop" data-start="1.05" data-duration="0.6" data-track-index="11" data-volume="0.7" src="assets/sfx/drop_002.ogg"></audio>
+      <audio id="sfx-title" data-start="3.7" data-duration="0.5" data-track-index="12" data-volume="0.6" src="assets/sfx/impactSoft_medium_001.ogg"></audio>
+      <audio id="sfx-flick" data-start="7.32" data-duration="0.6" data-track-index="13" data-volume="0.4" src="assets/sfx/card-slide-1.ogg"></audio>
+      <audio id="sfx-grab" data-start="9.5" data-duration="0.3" data-track-index="14" data-volume="0.4" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-release" data-start="10.6" data-duration="0.6" data-track-index="15" data-volume="0.5" src="assets/sfx/card-slide-1.ogg"></audio>
+      <audio id="sfx-snapback" data-start="11.15" data-duration="0.5" data-track-index="16" data-volume="0.38" src="assets/sfx/impactSoft_medium_001.ogg"></audio>
+      <audio id="sfx-click-13_18" data-start="13.18" data-duration="0.3" data-track-index="17" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-14_76" data-start="14.76" data-duration="0.3" data-track-index="18" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-15_8" data-start="15.8" data-duration="0.3" data-track-index="19" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-16_85" data-start="16.85" data-duration="0.3" data-track-index="20" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-18_41" data-start="18.41" data-duration="0.3" data-track-index="21" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-19_0" data-start="19" data-duration="0.3" data-track-index="22" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-eye-19_02" data-start="19.02" data-duration="0.8" data-track-index="23" data-volume="0.45" src="assets/sfx/impactGlass_light_001.ogg"></audio>
+      <audio id="sfx-click-20_5" data-start="20.5" data-duration="0.3" data-track-index="24" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-21_03" data-start="21.03" data-duration="0.3" data-track-index="25" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-eye-21_05" data-start="21.05" data-duration="0.9" data-track-index="26" data-volume="0.5" src="assets/sfx/impactGlass_medium_000.ogg"></audio>
+      <audio id="sfx-click-22_59" data-start="22.59" data-duration="0.3" data-track-index="27" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-23_64" data-start="23.64" data-duration="0.3" data-track-index="28" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-24_16" data-start="24.16" data-duration="0.3" data-track-index="29" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-click-25_72" data-start="25.72" data-duration="0.3" data-track-index="30" data-volume="0.55" src="assets/sfx/click2.ogg"></audio>
+      <audio id="sfx-outro" data-start="28.34" data-duration="2" data-track-index="31" data-volume="0.6" src="assets/sfx/impactBell_heavy_000.ogg"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      // The same smoothstep the clip's camera was rendered with.
+      gsap.registerEase("smooth", (p) => p * p * (3 - 2 * p));
+
+      const show = (target, at, y = 26, duration = 0.45) =>
+        tl.fromTo(target, { opacity: 0, y }, { opacity: 1, y: 0, duration, ease: "power3.out" }, at);
+      const hide = (target, at, duration = 0.25) => tl.to(target, { opacity: 0, duration, ease: "power1.in" }, at);
+      const pop = (target, at) => tl.fromTo(target, { opacity: 0 }, { opacity: 1, duration: 0.08, ease: "none" }, at);
+      const light = (target, at) => tl.set(target, { opacity: 1 }, at);
+
+      // The camera, in the clip's own numbers: the frame shows the screen around
+      // `centre` at `zoom`, so the stage is placed the same way.
+      const SCREEN = { w: 1440, h: 900 };
+      const FRAME = { w: 1080, h: 1350 };
+      const wideZoom = FRAME.w / SCREEN.w;
+      // Wide, the whole screen sits high in the frame with the words below it.
+      const WIDE = { x: SCREEN.w / 2, y: SCREEN.h / 2 + (FRAME.h / 2 - 470) / wideZoom, zoom: wideZoom };
+      const CLOSE = { x: SCREEN.w - FRAME.w / 2 / 2.2 - 6, y: FRAME.h / 2 / 2.2, zoom: 2.2 };
+      const place = (shot) => ({
+        x: FRAME.w / 2 - shot.x * shot.zoom,
+        y: FRAME.h / 2 - shot.y * shot.zoom,
+        scale: shot.zoom,
+      });
+      tl.set("#stage", { transformOrigin: "0 0", ...place(WIDE) }, 0);
+      tl.to("#stage", { ...place(CLOSE), duration: 1.04, ease: "smooth" }, 4.18);
+      tl.to("#stage", { ...place(WIDE), duration: 1.1, ease: "smooth" }, 25.95);
+
+      // 1 · Hook
+      show("#s-hook .copy", 0.25, 30, 0.55);
+      hide("#s-hook .copy", 3.3);
+
+      // 2 · Reveal — the name lands on the 3.70s strong beat
+      tl.fromTo("#s-brand .brand", { opacity: 0, scale: 0.9, transformOrigin: "0% 50%" },
+        { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }, 3.4);
+      show("#s-brand .tag", 3.85);
+      hide("#s-brand .copy", 6.05);
+
+      // 3 · The flick
+      show("#s-flick .h1", 6.4);
+      show("#s-flick .sub", 7.5);
+      hide("#s-flick .copy", 8.5);
+
+      // 4 · The pull — the line lands as the hand closes, the payoff as it lets go
+      show("#s-pull .h1", 8.75);
+      show("#s-pull .sub", 10.0);
+      hide("#s-pull .copy", 12.4);
+
+      // 5 · Pick your charm
+      show("#s-pick .h1", 12.8);
+      show("#s-pick .sub", 13.3);
+      hide("#s-pick .copy", 17.1);
+
+      // 6 · The ritual
+      show("#s-ritual .h1", 17.5);
+      tl.set("#s-ritual .swap", { opacity: 0 }, 0);
+      show("#s-ritual .a", 19.1, 18, 0.35);
+      hide("#s-ritual .a", 20.4, 0.2);
+      show("#s-ritual .b", 21.15, 18, 0.35);
+      hide("#s-ritual .copy", 21.85, 0.22);
+
+      // 7 · The size — the charm shrinks, then grows, then the whole screen
+      show("#s-size .h1", 22.2);
+      show("#s-size .sub", 22.7);
+      hide("#s-size .copy", 27.57);
+
+      // Menus open as clicked, and highlight what the pointer is on
+      pop("#m1", 13.18); light("#m1 .r-charm .hl", 13.64);
+      pop("#s1", 13.70); light("#s1 .r-pick .hl", 14.42);
+      pop("#m2", 15.80); light("#m2 .r-charm .hl", 16.02);
+      pop("#s2", 16.06); light("#s2 .r-pick .hl", 16.60);
+      pop("#c1", 18.41); light("#c1 .r-pick .hl", 18.86);
+      pop("#c2", 20.50); light("#c2 .r-pick .hl", 20.90);
+      pop("#m3", 22.59); light("#m3 .r-size .hl", 23.06);
+      pop("#s3", 23.12); light("#s3 .r-pick .hl", 23.48);
+      pop("#m4", 24.84); light("#m4 .r-size .hl", 25.20);
+      pop("#s4", 25.26); light("#s4 .r-pick .hl", 25.58);
+
+      // The pointer: tip positions in screen points, eased from one to the next
+      const path = [
+        [12.71, 1270, 330], [13.12, 1210, 12], [13.18, 1210, 12], [13.62, 1270, 90], [13.70, 1270, 90],
+        [14.10, 1150, 105], [14.60, 1080, 216], [14.76, 1080, 216], [15.74, 1210, 12], [15.80, 1210, 12],
+        [16.02, 1270, 90], [16.06, 1270, 90], [16.50, 1150, 105], [16.80, 1080, 174], [16.85, 1080, 174],
+        [18.35, 1204, 205], [18.41, 1204, 205], [18.95, 1270, 237], [19.00, 1270, 237], [19.80, 1320, 300],
+        [20.45, 1204, 205], [20.50, 1204, 205], [20.98, 1280, 237], [21.03, 1280, 237], [22.53, 1210, 12],
+        [22.59, 1210, 12], [23.06, 1270, 111], [23.12, 1270, 111], [23.50, 1160, 118], [23.58, 1120, 111],
+        [23.64, 1120, 111], [24.78, 1210, 12], [24.84, 1210, 12], [25.20, 1270, 111], [25.26, 1270, 111],
+        [25.70, 1160, 130], [25.72, 1120, 174], [25.86, 1112, 180],
+      ];
+      tl.set("#cursor", { x: path[0][1], y: path[0][2], opacity: 0, transformOrigin: "0 0" }, 0);
+      tl.to("#cursor", { opacity: 1, duration: 0.15 }, path[0][0]);
+      for (let i = 1; i < path.length; i++) {
+        const [t0] = path[i - 1], [t1, x, y] = path[i];
+        tl.to("#cursor", { x, y, duration: t1 - t0, ease: "power2.inOut" }, t0);
+      }
+      for (const t of [13.18, 14.76, 15.8, 16.85, 18.41, 19.0, 20.5, 21.03, 22.59, 23.64, 24.84, 25.72]) {
+        tl.to("#cursor", { scale: 0.86, duration: 0.06, yoyo: true, repeat: 1, ease: "power1.out" }, t);
+      }
+      hide("#cursor", 25.82, 0.12);
+
+      // 8 · Outro — the icon settles on the 28.34s beat
+      tl.fromTo("#outro-bg", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power1.out" }, 27.82);
+      tl.fromTo("#s-outro .o-icon", { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: 0.34, ease: "back.out(1.8)" }, 28.02);
+      show("#s-outro .o-name", 28.52);
+      show("#s-outro .o-line", 28.82);
+      show("#s-outro .o-url", 29.12);
+
+      tl.set({}, {}, 31.37);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
