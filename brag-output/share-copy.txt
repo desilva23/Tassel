@@ -5,19 +5,22 @@ given, and hard-wrapped text breaks mid-sentence.
 
 
 === LINKEDIN: THE POST ===
-Attach brag-vertical.mp4 as a native video. Paste from here to the hashtags.
+Attach brag-vertical.mp4 as a native video. Paste from the first line to the
+hashtags.
 
-I drew a lucky cat, and then spent far too long teaching it to swing properly.
+I built something completely useless this month. On purpose.
 
-Tassel hangs a hand-drawn charm from your Mac's menu bar on a real little rope. Flick it and the cord bends. Pull it right down and let go, and it springs back and tumbles. None of that is animation — it is a rope simulation running behind the menu bar, so the charm behaves like an object instead of a GIF.
+Tassel hangs a hand-drawn lucky charm from your Mac's menu bar, on a little rope. No sync. No streaks. No notifications. No AI. It doesn't want your email address.
 
-Every charm also asks for its own small ritual. The daruma is my favourite: you paint one eye when you make a wish, and the other when it comes true.
+What it does is swing. Flick the cord and it bends. Pull the charm right down and let go, and it springs back and tumbles — that's a real rope simulation, 24 points of it, running quietly up there.
 
-Seven charms so far, all drawn by hand. Four sizes. It remembers where you left it, and it stays out of your way.
+Every charm also asks for one small ritual. The daruma gets one eye painted when you make a wish, and the other when it comes true.
 
-Free, open source, macOS 14+, Apple Silicon and Intel. One line to install — it's in the comments.
+Everything else in my menu bar is asking me for something. This one just hangs there and sways.
 
-If it makes you smile, a star on GitHub would mean a lot.
+Seven charms, all drawn by hand. Free, open source, macOS 14+. Install line's in the comments.
+
+A star on GitHub would make my week.
 
 #macOS #Swift #OpenSource #IndieDev
 
