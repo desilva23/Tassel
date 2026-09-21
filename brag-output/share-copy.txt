@@ -32,13 +32,27 @@ A star on GitHub would make my week.
 
 === LINKEDIN: YOUR OWN FIRST COMMENT ===
 Post this as a comment yourself, straight after the post goes up. The link
-lives here rather than in the post because outbound links cost reach.
+lives here rather than in the post because outbound links cost reach. Both
+routes are given: one line for anyone, and Homebrew for the people who would
+rather not pipe a script into a shell.
 
-Install:
+Install, macOS 14 or newer:
 
 curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
 
-github.com/desilva23/Tassel — the code, the drawings and the Homebrew cask are all in there.
+Prefer Homebrew?
+
+brew trust https://github.com/desilva23/Tassel && brew tap desilva23/tassel https://github.com/desilva23/Tassel && brew install tassel
+
+github.com/desilva23/Tassel — the code, the drawings and the cask are all in there.
+
+
+=== LINKEDIN: A REPLY, IF SOMEONE OBJECTS TO CURL INTO BASH ===
+Someone will. They are not wrong to ask.
+
+Fair point — it is worth reading first, and it is short: raw.githubusercontent.com/desilva23/Tassel/main/install.sh
+
+It finds the latest release, checks the download against the sha256 published in the repo's Homebrew cask, copies the app to Applications and clears the quarantine flag macOS puts on anything downloaded. The Homebrew cask does exactly the same things. If you would rather have neither, the DMG is on the releases page.
 
 
 === LINKEDIN: A REPLY, IF SOMEONE ASKS HOW IT WORKS ===
