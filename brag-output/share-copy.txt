@@ -48,3 +48,25 @@ little bend stiffness, and a heavier node at the end so the charm throws the
 rope around rather than the other way round. Dragging pins that last node to the
 pointer, which is what makes the stretch and the recoil fall out for free. The
 whole thing is in Sources/TasselCore/Rope.swift, about 500 lines.
+
+
+BUY ME A COFFEE — ABOUT
+-----------------------
+Tassel is a free, open-source macOS app. It hangs a hand-drawn lucky charm from
+your menu bar on a real little rope: flick it and it swings, pull it down and
+the cord springs back, and every charm asks for its own small ritual — paint the
+daruma's eye when your wish comes true.
+
+I draw the charms myself and give the app away. If it made you smile, a coffee
+keeps the next one coming.
+
+Install (macOS 14 or newer):
+curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
+
+github.com/desilva23/Tassel
+
+
+BUY ME A COFFEE — THANK-YOU MESSAGE
+-----------------------------------
+Thank you, genuinely. Tell me which charm you hung up — or what you would like
+drawn next: github.com/desilva23/Tassel/issues
