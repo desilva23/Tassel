@@ -49,15 +49,19 @@ echo "==> Publishing the disk image"
 gh release create "v$version" "$dmg" --repo "$repo" --target "$(git rev-parse HEAD)" \
     --title "Tassel $version" --notes "${NOTES:-Tassel $version.}
 
-Install with Homebrew:
+Install:
 
 \`\`\`
-brew trust https://github.com/desilva23/Tassel
-brew tap desilva23/tassel https://github.com/desilva23/Tassel
-brew install tassel
+curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
 \`\`\`
 
-Already installed? \`brew upgrade tassel\`."
+Or with Homebrew:
+
+\`\`\`
+brew trust https://github.com/desilva23/Tassel && brew tap desilva23/tassel https://github.com/desilva23/Tassel && brew install tassel
+\`\`\`
+
+Already installed? Run the same line again, or \`brew upgrade tassel\`."
 
 echo "==> Checking the public download"
 url="https://github.com/$repo/releases/download/v$version/Tassel-$version.dmg"

@@ -55,13 +55,22 @@ opened macOS refuses and says it cannot check it. Click **Done**, then in
 beside Tassel. That is needed once; after that it opens like anything else.
 Opening with no warning at all needs an Apple Developer Program membership.
 
-It is also published through Homebrew, which installs it with no warning. This
-repository is its own tap: the cask is `Casks/tassel.rb`, so it is tapped by URL.
+`install.sh` clears that flag for you: it takes the latest release, checks it
+against the checksum in `Casks/tassel.rb` and copies the app across. One line,
+and no Homebrew needed.
 
 ```bash
-brew trust https://github.com/desilva23/Tassel
-brew tap desilva23/tassel https://github.com/desilva23/Tassel
-brew install tassel
+curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
+```
+
+It is also published through Homebrew. This repository is its own tap: the cask
+is `Casks/tassel.rb`. Homebrew 7 requires a non-official tap to be trusted
+before it will load, and a tap only resolves from a short `user/name` when the
+repository is called `homebrew-name` — so both the trust and the tap have to
+name the URL.
+
+```bash
+brew trust https://github.com/desilva23/Tassel && brew tap desilva23/tassel https://github.com/desilva23/Tassel && brew install tassel
 ```
 
 To publish a new version, from a clean `main`:

@@ -33,12 +33,20 @@
 ## Install
 
 ```bash
-brew trust https://github.com/desilva23/Tassel
-brew tap desilva23/tassel https://github.com/desilva23/Tassel
-brew install tassel
+curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
 ```
 
-Then open **Tassel** from Spotlight. Update with `brew upgrade tassel`.
+It takes the latest release, checks it against the checksum published here, puts
+it in Applications and opens it. Run the same line again to update.
+[Read the script](install.sh) first if you would rather.
+
+With Homebrew instead:
+
+```bash
+brew trust https://github.com/desilva23/Tassel && brew tap desilva23/tassel https://github.com/desilva23/Tassel && brew install tassel
+```
+
+Then `brew upgrade tassel` to update. Pick one or the other, not both.
 
 ## Using it
 
