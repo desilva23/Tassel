@@ -1,0 +1,1 @@
+I made Tassel: a hand-drawn lucky charm that hangs from your Mac's menu bar on a real little rope. Flick it and it bends and swings. Pull it right down and let go, and the cord springs back. Pick a charm, set its size, and paint the daruma's eye when your wish comes true. Free and open source.

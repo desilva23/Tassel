@@ -11,6 +11,9 @@ someone else's artwork, this is the document that answers it.
 | Cord | Drawn at runtime with `NSBezierPath` in `CharmView.draw(_:)` | Original |
 | `Resources/AppIcon.icns` | The maneki-neko drawing above on a cord, drawn into a tile by `Tools/app-icon/main.swift` (`make icon`) | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
 | `docs/icon.png`, `docs/charms.png`, `docs/demo.gif` | The app icon; the drawn charms hung on their cords; and the maneki neko swinging on the app's own rope physics under a mock menu bar, all rendered for the README | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `brag-output/brag.mp4`, `brag-output/brag.jpg`, `brag-output/composition/assets/` (`img/`, `clips/`) | The launch video: the charms and app icon above, and a mock desktop rendered from the app's own rope physics by `brag-output/clip-renderer/main.swift` | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
+| `brag-output/composition/assets/sfx/*.ogg` | [Kenney](https://kenney.nl/) sound packs | CC0 |
+| The music in `brag-output/brag.mp4` | "Happy Beats / Business Moves vol. 9" from [ende.app](https://ende.app/en) | Royalty-free for use in video; the track itself is not redistributed here — see [brag-output/README.md](brag-output/README.md) |
 | `Resources/Charms/daruma.png` | Drawn by Desilva Stalin | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
 | `Resources/Charms/daruma-blank.png` | Drawn by Desilva Stalin | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
 | `Resources/Charms/daruma-one-eye.png` | Made from the two above by `Tools/daruma-one-eye.swift` | CC BY-NC 4.0 — see [LICENSE-ART](LICENSE-ART) |
