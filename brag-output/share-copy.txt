@@ -1,1 +1,50 @@
-I made Tassel: a hand-drawn lucky charm that hangs from your Mac's menu bar on a real little rope. Flick it and it bends and swings. Pull it right down and let go, and the cord springs back. Pick a charm, set its size, and paint the daruma's eye when your wish comes true. Free and open source.
+ONE LINE
+--------
+I made Tassel: a hand-drawn lucky charm that hangs from your Mac's menu bar on a
+real little rope. Flick it and it bends and swings. Pull it right down and let
+go, and the cord springs back. Pick a charm, set its size, and paint the
+daruma's eye when your wish comes true. Free and open source.
+
+
+LINKEDIN POST
+-------------
+(attach brag-vertical.mp4 as a native video)
+
+I drew a lucky cat, and then spent far too long teaching it to swing properly.
+
+Tassel hangs a hand-drawn charm from your Mac's menu bar on a real little rope.
+Flick it and the cord bends. Pull it right down and let go, and it springs back
+and tumbles. None of that is animation — it is a rope simulation running behind
+the menu bar, so the charm behaves like an object instead of a GIF.
+
+Every charm also asks for its own small ritual. The daruma is my favourite: you
+paint one eye when you make a wish, and the other when it comes true.
+
+Seven charms so far, all drawn by hand. Four sizes. It remembers where you left
+it, and it stays out of your way.
+
+Free, open source, macOS 14+, Apple Silicon and Intel. One line to install —
+it's in the comments.
+
+If it makes you smile, a star on GitHub would mean a lot.
+
+#macOS #Swift #OpenSource #IndieDev
+
+
+FIRST COMMENT
+-------------
+Install:
+
+curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
+
+github.com/desilva23/Tassel — the code, the drawings and the Homebrew cask are
+all in there.
+
+
+IF SOMEONE ASKS HOW IT WORKS
+----------------------------
+The cord is 24 points solved with Verlet integration: distance constraints, a
+little bend stiffness, and a heavier node at the end so the charm throws the
+rope around rather than the other way round. Dragging pins that last node to the
+pointer, which is what makes the stretch and the recoil fall out for free. The
+whole thing is in Sources/TasselCore/Rope.swift, about 500 lines.
