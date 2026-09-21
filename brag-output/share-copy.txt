@@ -1,64 +1,51 @@
-ONE LINE
---------
-I made Tassel: a hand-drawn lucky charm that hangs from your Mac's menu bar on a
-real little rope. Flick it and it bends and swings. Pull it right down and let
-go, and the cord springs back. Pick a charm, set its size, and paint the
-daruma's eye when your wish comes true. Free and open source.
+Copy for the launch. Each block goes to a different place — paste one block at
+a time, never the headings, and never the whole file. Paragraphs are kept on
+single long lines on purpose: a paste into a post keeps the line breaks it is
+given, and hard-wrapped text breaks mid-sentence.
 
 
-LINKEDIN POST
--------------
-(attach brag-vertical.mp4 as a native video)
+=== LINKEDIN: THE POST ===
+Attach brag-vertical.mp4 as a native video. Paste from here to the hashtags.
 
 I drew a lucky cat, and then spent far too long teaching it to swing properly.
 
-Tassel hangs a hand-drawn charm from your Mac's menu bar on a real little rope.
-Flick it and the cord bends. Pull it right down and let go, and it springs back
-and tumbles. None of that is animation — it is a rope simulation running behind
-the menu bar, so the charm behaves like an object instead of a GIF.
+Tassel hangs a hand-drawn charm from your Mac's menu bar on a real little rope. Flick it and the cord bends. Pull it right down and let go, and it springs back and tumbles. None of that is animation — it is a rope simulation running behind the menu bar, so the charm behaves like an object instead of a GIF.
 
-Every charm also asks for its own small ritual. The daruma is my favourite: you
-paint one eye when you make a wish, and the other when it comes true.
+Every charm also asks for its own small ritual. The daruma is my favourite: you paint one eye when you make a wish, and the other when it comes true.
 
-Seven charms so far, all drawn by hand. Four sizes. It remembers where you left
-it, and it stays out of your way.
+Seven charms so far, all drawn by hand. Four sizes. It remembers where you left it, and it stays out of your way.
 
-Free, open source, macOS 14+, Apple Silicon and Intel. One line to install —
-it's in the comments.
+Free, open source, macOS 14+, Apple Silicon and Intel. One line to install — it's in the comments.
 
 If it makes you smile, a star on GitHub would mean a lot.
 
 #macOS #Swift #OpenSource #IndieDev
 
 
-FIRST COMMENT
--------------
+=== LINKEDIN: YOUR OWN FIRST COMMENT ===
+Post this as a comment yourself, straight after the post goes up. The link
+lives here rather than in the post because outbound links cost reach.
+
 Install:
 
 curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
 
-github.com/desilva23/Tassel — the code, the drawings and the Homebrew cask are
-all in there.
+github.com/desilva23/Tassel — the code, the drawings and the Homebrew cask are all in there.
 
 
-IF SOMEONE ASKS HOW IT WORKS
-----------------------------
-The cord is 24 points solved with Verlet integration: distance constraints, a
-little bend stiffness, and a heavier node at the end so the charm throws the
-rope around rather than the other way round. Dragging pins that last node to the
-pointer, which is what makes the stretch and the recoil fall out for free. The
-whole thing is in Sources/TasselCore/Rope.swift, about 500 lines.
+=== LINKEDIN: A REPLY, IF SOMEONE ASKS HOW IT WORKS ===
+Only if asked.
+
+The cord is 24 points solved with Verlet integration: distance constraints, a little bend stiffness, and a heavier node at the end so the charm throws the rope around rather than the other way round. Dragging pins that last node to the pointer, which is what makes the stretch and the recoil fall out for free. It is all in Sources/TasselCore/Rope.swift, about 500 lines.
 
 
-BUY ME A COFFEE — ABOUT
------------------------
-Tassel is a free, open-source macOS app. It hangs a hand-drawn lucky charm from
-your menu bar on a real little rope: flick it and it swings, pull it down and
-the cord springs back, and every charm asks for its own small ritual — paint the
-daruma's eye when your wish comes true.
+=== BUY ME A COFFEE: THE ABOUT BOX ===
+buymeacoffee.com -> Settings -> Page -> About. Replaces the old install line,
+which no longer works.
 
-I draw the charms myself and give the app away. If it made you smile, a coffee
-keeps the next one coming.
+Tassel is a free, open-source macOS app. It hangs a hand-drawn lucky charm from your menu bar on a real little rope: flick it and it swings, pull it down and the cord springs back, and every charm asks for its own small ritual — paint the daruma's eye when your wish comes true.
+
+I draw the charms myself and give the app away. If it made you smile, a coffee keeps the next one coming.
 
 Install (macOS 14 or newer):
 curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | bash
@@ -66,7 +53,13 @@ curl -fsSL https://raw.githubusercontent.com/desilva23/Tassel/main/install.sh | 
 github.com/desilva23/Tassel
 
 
-BUY ME A COFFEE — THANK-YOU MESSAGE
------------------------------------
-Thank you, genuinely. Tell me which charm you hung up — or what you would like
-drawn next: github.com/desilva23/Tassel/issues
+=== BUY ME A COFFEE: THE THANK-YOU MESSAGE ===
+Same settings page. Shown to someone after they support you.
+
+Thank you, genuinely. Tell me which charm you hung up — or what you would like drawn next: github.com/desilva23/Tassel/issues
+
+
+=== ANYWHERE ELSE: ONE LINE ===
+A GitHub release, a README, a message to a friend.
+
+I made Tassel: a hand-drawn lucky charm that hangs from your Mac's menu bar on a real little rope. Flick it and it bends and swings. Pull it right down and let go, and the cord springs back. Pick a charm, set its size, and paint the daruma's eye when your wish comes true. Free and open source.
